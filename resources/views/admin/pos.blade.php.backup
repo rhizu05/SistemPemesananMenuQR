@@ -1,0 +1,409 @@
+@extends('layouts.app')
+
+@section('title', 'POS - Point of Sale')
+
+@section('content')
+<div class="container-fluid">
+    <div class="page-header mb-4">
+        <h2><i class="bi bi-cash-register"></i> Point of Sale (POS)</h2>
+        <p>Sistem kasir untuk pesanan takeaway dan dine-in</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Menu Section (Left) -->
+        <div class="col-lg-8">
+            <!-- Category Filter -->
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-body p-2">
+                    <div class="d-flex gap-2 overflow-auto category-scroll" style="scrollbar-width: none; -ms-overflow-style: none; white-space: nowrap;">
+                        <button type="button" class="btn btn-outline-primary rounded-pill px-3 active flex-shrink-0" data-category="all">
+                            <i class="bi bi-grid-fill me-1"></i> Semua
+                        </button>
+                        @foreach($categories as $category)
+                            <button type="button" class="btn btn-outline-primary rounded-pill px-3 flex-shrink-0" data-category="{{ $category->id }}">
+                                {{ $category->name }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Grid -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-card-list"></i> Daftar Menu
+                </div>
+                <div class="card-body">
+                    <div class="row g-3" id="menuGrid">
+                        @foreach($menus as $menu)
+                            <div class="col-md-4 col-sm-6 menu-item" data-category="{{ $menu->category_id }}">
+                                <div class="card h-100 menu-card" style="cursor: pointer;" 
+                                     data-menu-id="{{ $menu->id }}"
+                                     data-menu-name="{{ $menu->name }}"
+                                     data-menu-price="{{ $menu->price }}"
+                                     data-menu-stock="{{ $menu->stock }}">
+                                    @if($menu->image)
+                                        <img src="{{ asset('storage/' . $menu->image) }}" 
+                                             class="card-img-top" 
+                                             alt="{{ $menu->name }}"
+                                             style="height: 120px; object-fit: cover;">
+                                    @else
+                                        <div class="bg-light d-flex align-items-center justify-content-center" 
+                                             style="height: 120px;">
+                                            <i class="bi bi-image" style="font-size: 2rem; color: #ccc;"></i>
+                                        </div>
+                                    @endif
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-1" style="font-size: 0.9rem;">{{ $menu->name }}</h6>
+                                        <p class="text-primary fw-bold mb-1">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+                                        <small class="text-muted">Stok: {{ $menu->stock }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Section (Right) -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-cart3"></i> Keranjang Pesanan
+                </div>
+                <div class="card-body">
+                    <!-- Customer Info -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Informasi Pelanggan</label>
+                        <input type="text" class="form-control form-control-sm mb-2" id="customerName" placeholder="Nama Pelanggan" required>
+                    </div>
+
+                    <!-- Order Type -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tipe Pesanan</label>
+                        <input type="text" class="form-control form-control-sm" value="Takeaway" readonly>
+                        <input type="hidden" id="orderType" value="takeaway">
+                    </div>
+
+                    <!-- Cart Items -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Item Pesanan</label>
+                        <div id="cartItems" style="max-height: 250px; overflow-y: auto;">
+                            <div class="text-center text-muted py-4" id="emptyCart">
+                                <i class="bi bi-cart-x" style="font-size: 2rem;"></i>
+                                <p class="mb-0 mt-2">Keranjang kosong</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="border-top pt-3 mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong id="subtotal">Rp 0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Pajak (10%):</span>
+                            <strong id="tax">Rp 0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total:</strong>
+                            <h5 class="text-primary mb-0" id="total">Rp 0</h5>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Metode Pembayaran</label>
+                        <select class="form-select form-select-sm" id="paymentMethod">
+                            <option value="cash" selected>Tunai</option>
+                            <option value="qris">QRIS</option>
+                        </select>
+                    </div>
+
+                    <!-- Cash Payment Section -->
+                    <div class="mb-3" id="cashPaymentSection">
+                        <label class="form-label fw-bold">Uang Diterima</label>
+                        <input type="number" class="form-control form-control-sm" id="amountPaid" placeholder="Masukkan jumlah uang" min="0">
+                        <div class="alert alert-success mt-2" id="changeAlert" style="display: none;">
+                            <small><strong>Kembalian:</strong> <span id="changeAmount">Rp 0</span></small>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-success" id="processOrder">
+                            <i class="bi bi-check-circle"></i> Proses Pesanan
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" id="clearCart">
+                            <i class="bi bi-trash"></i> Kosongkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-check-circle"></i> Pesanan Berhasil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Pesanan Berhasil Dibuat!</h4>
+                <p class="mb-2">Nomor Pesanan:</p>
+                <h3 class="text-primary" id="orderNumber"></h3>
+                <p class="mt-3">Total Pembayaran:</p>
+                <h4 class="text-success" id="orderTotal"></h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <a href="#" id="printReceipt" class="btn btn-primary" target="_blank">
+                    <i class="bi bi-printer"></i> Cetak Struk
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.menu-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    border-color: var(--primary-color);
+}
+
+.cart-item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.btn-group .btn {
+    font-size: 0.875rem;
+}
+
+.sticky-top {
+    z-index: 100;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.category-scroll::-webkit-scrollbar {
+    display: none;
+}
+</style>
+            // Update active button
+            document.querySelectorAll('[data-category]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter menu items
+            document.querySelectorAll('.menu-item').forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Add to cart
+    document.querySelectorAll('.menu-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const menuId = this.dataset.menuId;
+            const menuName = this.dataset.menuName;
+            const menuPrice = parseFloat(this.dataset.menuPrice);
+            const menuStock = parseInt(this.dataset.menuStock);
+            
+            // Check if already in cart
+            const existingItem = cart.find(item => item.menu_id === menuId);
+            
+            if (existingItem) {
+                if (existingItem.quantity < menuStock) {
+                    existingItem.quantity++;
+                } else {
+                    alert('Stok tidak mencukupi!');
+                    return;
+                }
+            } else {
+                cart.push({
+                    menu_id: menuId,
+                    name: menuName,
+                    price: menuPrice,
+                    quantity: 1,
+                    stock: menuStock,
+                    notes: ''
+                });
+            }
+            
+            updateCart();
+        });
+    });
+    
+    // Clear cart
+    document.getElementById('clearCart').addEventListener('click', function() {
+        if (confirm('Kosongkan keranjang?')) {
+            cart = [];
+            updateCart();
+        }
+    });
+    
+    // Process order
+    document.getElementById('processOrder').addEventListener('click', function() {
+        if (cart.length === 0) {
+            alert('Keranjang masih kosong!');
+            return;
+        }
+        
+        const customerName = document.getElementById('customerName').value.trim();
+        const customerPhone = document.getElementById('customerPhone').value.trim();
+        
+        if (!customerName || !customerPhone) {
+            alert('Mohon lengkapi informasi pelanggan!');
+            return;
+        }
+        
+        const orderData = {
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            table_number: document.getElementById('tableNumber').value.trim(),
+            order_type: document.getElementById('orderType').value,
+            payment_method: document.getElementById('paymentMethod').value,
+            items: cart.map(item => ({
+                menu_id: item.menu_id,
+                quantity: item.quantity,
+                notes: item.notes
+            }))
+        };
+        
+        // Disable button
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+        
+        // Send to server
+        fetch('{{ route("admin.pos.create-order") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(orderData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success modal
+                document.getElementById('orderNumber').textContent = data.order_number;
+                document.getElementById('orderTotal').textContent = 'Rp ' + data.total_amount.toLocaleString('id-ID');
+                document.getElementById('printReceipt').href = `/admin/order/${data.order_id}/receipt`;
+                
+                const modal = new bootstrap.Modal(document.getElementById('successModal'));
+                modal.show();
+                
+                // Reset form
+                cart = [];
+                updateCart();
+                document.getElementById('customerName').value = '';
+                document.getElementById('customerPhone').value = '';
+                document.getElementById('tableNumber').value = '';
+            } else {
+                alert('Gagal membuat pesanan: ' + (data.message || 'Terjadi kesalahan'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memproses pesanan');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> Proses Pesanan';
+        });
+    });
+});
+
+function updateCart() {
+    const cartItemsDiv = document.getElementById('cartItems');
+    const emptyCart = document.getElementById('emptyCart');
+    
+    if (cart.length === 0) {
+        emptyCart.style.display = 'block';
+        cartItemsDiv.querySelectorAll('.cart-item').forEach(item => item.remove());
+    } else {
+        emptyCart.style.display = 'none';
+        
+        // Clear existing items
+        cartItemsDiv.querySelectorAll('.cart-item').forEach(item => item.remove());
+        
+        // Add items
+        cart.forEach((item, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cart-item';
+            itemDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="flex-grow-1">
+                        <strong style="font-size: 0.9rem;">${item.name}</strong>
+                        <br>
+                        <small class="text-muted">Rp ${item.price.toLocaleString('id-ID')}</small>
+                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="removeFromCart(${index})">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="decreaseQty(${index})">-</button>
+                    <span class="fw-bold">${item.quantity}</span>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="increaseQty(${index})">+</button>
+                    <span class="ms-auto fw-bold">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                </div>
+            `;
+            cartItemsDiv.appendChild(itemDiv);
+        });
+    }
+    
+    // Update totals
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const tax = subtotal * 0.1;
+    const total = subtotal + tax;
+    
+    document.getElementById('subtotal').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+    document.getElementById('tax').textContent = 'Rp ' + tax.toLocaleString('id-ID');
+    document.getElementById('total').textContent = 'Rp ' + total.toLocaleString('id-ID');
+}
+
+function increaseQty(index) {
+    if (cart[index].quantity < cart[index].stock) {
+        cart[index].quantity++;
+        updateCart();
+    } else {
+        alert('Stok tidak mencukupi!');
+    }
+}
+
+function decreaseQty(index) {
+    if (cart[index].quantity > 1) {
+        cart[index].quantity--;
+        updateCart();
+    }
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCart();
+}
+</script>
+@endsection
