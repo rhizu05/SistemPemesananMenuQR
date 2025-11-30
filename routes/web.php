@@ -18,15 +18,7 @@ Route::middleware(['guest'])->group(function () {
 });
 
 // Temporary Migration Route (Delete after use)
-Route::get('/migrate-db', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true]);
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-        return 'Migration and Seeding Completed Successfully!';
-    } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
-    }
-});
+
 
 Route::get('/', [CustomerController::class, 'index'])->name('home');
 
