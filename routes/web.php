@@ -16,6 +16,19 @@ Route::middleware(['guest'])->group(function () {
     Route::post('/login/verify-otp', [AuthController::class, 'verifyOTP'])->name('customer.verifyotp');
 });
 
+// Temporary Migration Route (Delete after use)
+Route::get('/migrate-db', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        return 'Migration and Seeding Completed Successfully!';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
+
+Route::get('/', [CustomerController::class, 'index'])->name('home');
+
 // Logout (Universal)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
