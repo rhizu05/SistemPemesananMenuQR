@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\QRController;
+use App\Http\Controllers\CustomerController;
 
 // ==================== AUTHENTICATION ROUTES ====================
 
