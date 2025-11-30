@@ -529,7 +529,7 @@
         <nav class="navbar navbar-expand-md navbar-dark">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
-                <img src="{{ asset('images/logo.png') }}" alt="Dapoer Katendjo Logo">
+                <img src="/images/logo.png" alt="Dapoer Katendjo Logo" style="height: 40px;">
                 Dapoer Katendjo
             </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
