@@ -10,7 +10,7 @@
                 <div class="card-body p-5">
                     <div class="mb-4">
                         <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                            <i class="bi bi-qr-code-scan text-primary" style="font-size: 2.5rem;"></i>
+                            <i class="bi bi-qr-code-scan" style="font-size: 2.5rem; color: #4A7F5A;"></i>
                         </div>
                     </div>
                     
@@ -29,7 +29,10 @@
                         </div>
                     </div>
 
-                    <button id="start-scan" class="btn btn-primary btn-lg w-100 mb-3">
+                    <button id="start-scan" class="btn text-white btn-lg w-100 mb-3" 
+                            style="background-color: #2A5C3F; transition: all 0.3s;"
+                            onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+                            onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
                         <i class="bi bi-camera me-2"></i> Buka Kamera
                     </button>
                     
@@ -38,7 +41,7 @@
                     </button>
 
                     <div class="mt-4">
-                        <small class="text-muted">
+                        <small style="color: #4A7F5A;">
                             Atau minta bantuan pelayan jika mengalami kesulitan.
                         </small>
                     </div>

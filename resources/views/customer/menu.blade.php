@@ -30,7 +30,7 @@
     </a>
 
     <!-- Category Filter (Scrollable with Arrows) -->
-    <div class="mb-4 sticky-top bg-body py-2" style="top: 0; z-index: 99;">
+    <div class="mb-4 sticky-top py-2" style="top: 0; z-index: 99; background-color: #F3F7F4;">
         <div class="d-flex align-items-center">
             <!-- Scroll Left Button -->
             <button class="btn btn-light btn-sm rounded-circle shadow-sm me-2 d-none d-md-block" id="scrollLeft" style="width: 40px; height: 40px;">
@@ -39,11 +39,11 @@
             
             <!-- Category Buttons Container -->
             <div class="d-flex gap-2 overflow-auto pb-2 category-scroll flex-grow-1" id="categoryContainer" style="scrollbar-width: none; -ms-overflow-style: none; scroll-behavior: smooth;">
-                <button class="btn btn-outline-dark rounded-pill px-4 active flex-shrink-0" data-category="all">
+                <button class="btn btn-category rounded-pill px-4 active flex-shrink-0" data-category="all">
                     <i class="bi bi-grid-fill me-1"></i> Semua
                 </button>
                 @foreach($categories as $category)
-                    <button class="btn btn-outline-dark rounded-pill px-4 flex-shrink-0" data-category="{{ $category->id }}">
+                    <button class="btn btn-category rounded-pill px-4 flex-shrink-0" data-category="{{ $category->id }}">
                         {{ $category->name }}
                     </button>
                 @endforeach
@@ -73,20 +73,23 @@
                         </div>
                     @endif
                     <div class="card-body">
-                        <h6 class="card-title">{{ $menu->name }}</h6>
-                        <p class="card-text text-muted small">{{ Str::limit($menu->description, 60) }}</p>
+                        <h6 class="card-title fw-bold">{{ $menu->name }}</h6>
+                        <p class="card-text small" style="color: #555555;">{{ Str::limit($menu->description, 60) }}</p>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-dark fw-bold">Rp {{ number_format($menu->price, 0, ',', '.') }}</span>
+                            <span class="fw-bold" style="color: #2A5C3F; font-size: 1.1rem;">Rp {{ number_format($menu->price, 0, ',', '.') }}</span>
                         </div>
                         @if($menu->is_available && $menu->stock > 0)
-                            <button class="btn btn-success btn-sm w-100 btn-add-to-cart" 
+                            <button class="btn text-white btn-sm w-100 btn-add-to-cart" 
+                                    style="background-color: #2A5C3F; transition: all 0.3s;"
+                                    onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+                                    onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';"
                                     data-menu-id="{{ $menu->id }}"
                                     data-menu-name="{{ $menu->name }}"
                                     data-menu-price="{{ $menu->price }}">
                                 <i class="bi bi-cart-plus"></i> Tambah
                             </button>
                         @else
-                            <button class="btn btn-secondary btn-sm w-100" disabled>
+                            <button class="btn text-white btn-sm w-100" style="background-color: #D32F2F;" disabled>
                                 <i class="bi bi-x-circle"></i> Habis
                             </button>
                         @endif
@@ -106,7 +109,7 @@
 </div>
 
 <!-- Toast Notification -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+<div class="position-fixed bottom-0 start-0 p-3" style="z-index: 2000">
     <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
         <div class="d-flex">
             <div class="toast-body">
@@ -142,15 +145,22 @@
     border-color: var(--primary-color);
 }
 
-.category-filter .btn {
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
+.btn-category {
+    background-color: white;
+    color: #4A7F5A;
+    border: 1px solid #4A7F5A;
+    transition: all 0.3s;
 }
 
-.category-filter .btn.active {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
+.btn-category:hover {
+    background-color: #f0fdf4;
+    color: #2A5C3F;
+}
+
+.btn-category.active {
+    background-color: #2A5C3F !important;
+    color: white !important;
+    border-color: #2A5C3F !important;
 }
 
 @media (max-width: 768px) {

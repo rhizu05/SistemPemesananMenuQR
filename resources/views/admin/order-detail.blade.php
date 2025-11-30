@@ -5,15 +5,21 @@
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header d-flex justify-content-between align-items-center text-white" style="background-color: #2F6A48;">
                     <h4>Detail Pesanan #{{ $order->order_number }}</h4>
-                    <div class="btn-group">
+                    <div class="d-flex gap-2">
                         @if($order->payment_status === 'paid')
-                        <a href="{{ route('admin.order.receipt', $order->id) }}" class="btn btn-success" target="_blank">
+                        <a href="{{ route('admin.order.receipt', $order->id) }}" class="btn text-white" target="_blank"
+                           style="background-color: #2563EB; transition: all 0.3s;"
+                           onmouseover="this.style.backgroundColor='#1d4ed8'; this.style.transform='translateY(-2px)';" 
+                           onmouseout="this.style.backgroundColor='#2563EB'; this.style.transform='translateY(0)';">
                             <i class="bi bi-printer"></i> Cetak Struk
                         </a>
                         @endif
-                        <a href="{{ route('admin.orders') }}" class="btn btn-outline-primary">
+                        <a href="{{ route('admin.orders') }}" class="btn"
+                           style="background-color: #E5E7EB; color: #333; transition: all 0.3s;"
+                           onmouseover="this.style.backgroundColor='#d1d5db'; this.style.transform='translateY(-2px)';" 
+                           onmouseout="this.style.backgroundColor='#E5E7EB'; this.style.transform='translateY(0)';">
                             <i class="bi bi-arrow-left"></i> Kembali
                         </a>
                     </div>
@@ -41,13 +47,13 @@
                             <h5>Status Pesanan</h5>
                             <p>
                                 <strong>Status saat ini:</strong> 
-                                <span class="badge 
-                                    @if($order->status === 'pending') bg-warning
-                                    @elseif($order->status === 'confirmed') bg-info
-                                    @elseif($order->status === 'preparing') bg-primary
-                                    @elseif($order->status === 'ready') bg-success
-                                    @elseif($order->status === 'delivered') bg-success
-                                    @else bg-danger
+                                <span class="badge text-white" style="
+                                    @if($order->status === 'pending') background-color: #F7C948;
+                                    @elseif($order->status === 'confirmed') background-color: #3B82F6;
+                                    @elseif($order->status === 'preparing') background-color: #FFA552;
+                                    @elseif($order->status === 'ready') background-color: #46A36B;
+                                    @elseif($order->status === 'delivered') background-color: #46A36B;
+                                    @else background-color: #D9534F;
                                     @endif
                                 ">
                                     @if($order->status === 'pending') Pending
@@ -63,7 +69,7 @@
                             <p><strong>Total:</strong> Rp {{ number_format($order->total_amount, 2, ',', '.') }}</p>
                             <p>
                                 <strong>Metode Pembayaran:</strong> 
-                                <span class="badge bg-secondary">
+                                <span class="badge text-white" style="background-color: {{ $order->payment_method === 'qris' ? '#6B7280' : '#9CA3AF' }};">
                                     @if($order->payment_method === 'cash')
                                         Tunai
                                     @elseif($order->payment_method === 'qris')
@@ -77,7 +83,7 @@
                             </p>
                             <p>
                                 <strong>Status Pembayaran:</strong> 
-                                <span class="badge {{ $order->payment_status === 'paid' ? 'bg-success' : 'bg-warning' }}">
+                                <span class="badge text-white" style="background-color: {{ $order->payment_status === 'paid' ? '#46A36B' : '#FFA552' }};">
                                     {{ $order->payment_status === 'paid' ? 'Lunas' : 'Belum Lunas' }}
                                 </span>
                             </p>
@@ -113,10 +119,28 @@
                                 @endforeach
                             </tbody>
                             <tfoot>
-                                <tr>
-                                    <th colspan="3" class="text-end">Total:</th>
-                                    <th>Rp {{ number_format($order->total_amount, 2, ',', '.') }}</th>
-                                </tr>
+                                @if($order->voucher_code)
+                                    <tr>
+                                        <th colspan="3" class="text-end">Subtotal Item:</th>
+                                        <th>Rp {{ number_format($order->subtotal ?? $order->total_amount + $order->discount_amount, 0, ',', '.') }}</th>
+                                    </tr>
+                                    <tr style="background-color: #D7EDE0;">
+                                        <th colspan="3" class="text-end">
+                                            <i class="bi bi-ticket-perforated"></i> Diskon Voucher ({{ $order->voucher_code }}):
+                                        </th>
+                                        <th class="text-success">-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</th>
+                                    </tr>
+                                    <tr style="background-color: #E2F1E7;">
+                                        <th colspan="3" class="text-end">Total Bayar:</th>
+                                        <th>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</th>
+                                    </tr>
+                                @else
+                                    <tr>
+                                        <th colspan="3" class="text-end">Total:</th>
+                                        <th>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</th>
+                                    </tr>
+                                @endif
+                                
                                 @if($order->payment_status === 'paid' && $order->payment_method === 'cash')
                                 <tr>
                                     <th colspan="3" class="text-end">Uang Dibayar:</th>
@@ -132,7 +156,7 @@
                     </div>
 
                     <!-- Tombol Konfirmasi Pesanan -->
-                    @if($order->payment_status !== 'paid')
+                    @if($order->payment_status !== 'paid' && $order->payment_method !== 'qris')
                     <div class="mt-4">
                         <button type="button" class="btn btn-success btn-lg w-100" data-bs-toggle="modal" data-bs-target="#paymentModal">
                             <i class="bi bi-cash-coin"></i> Konfirmasi Pembayaran

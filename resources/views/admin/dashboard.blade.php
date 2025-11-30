@@ -38,19 +38,19 @@
         transform: translateY(-4px);
     }
     
-    .stat-card.border-primary {
-        border-left-color: var(--primary-color);
+    .stat-card.border-total {
+        border-left-color: var(--status-total);
     }
     
-    .stat-card.border-warning {
+    .stat-card.border-pending {
         border-left-color: var(--status-pending);
     }
     
-    .stat-card.border-info {
+    .stat-card.border-processing {
         border-left-color: var(--status-processing);
     }
     
-    .stat-card.border-success {
+    .stat-card.border-ready {
         border-left-color: var(--status-ready);
     }
     
@@ -169,52 +169,52 @@
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="stat-card border-primary">
+            <div class="stat-card" style="background-color: #F3F7F4; border-left: 4px solid #2A5C3F;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="mb-2">TOTAL PESANAN</p>
-                        <h2 style="color: var(--primary-color);">{{ $totalOrders }}</h2>
+                        <h2 style="color: #2A5C3F;">{{ $totalOrders }}</h2>
                     </div>
-                    <div class="stat-icon" style="color: var(--primary-color);">
+                    <div class="stat-icon" style="color: #2A5C3F;">
                         <i class="bi bi-receipt"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card border-warning">
+            <div class="stat-card" style="border-left: 4px solid #FBC02D;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="mb-2">PENDING</p>
-                        <h2 style="color: var(--status-pending);">{{ $pendingOrders }}</h2>
+                        <h2 style="color: #FBC02D;">{{ $pendingOrders }}</h2>
                     </div>
-                    <div class="stat-icon" style="color: var(--status-pending);">
+                    <div class="stat-icon" style="color: #FBC02D;">
                         <i class="bi bi-clock-history"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card border-info">
+            <div class="stat-card" style="border-left: 4px solid #1976D2;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="mb-2">DIPROSES</p>
-                        <h2 style="color: var(--status-processing);">{{ $preparingOrders }}</h2>
+                        <h2 style="color: #1976D2;">{{ $preparingOrders }}</h2>
                     </div>
-                    <div class="stat-icon" style="color: var(--status-processing);">
+                    <div class="stat-icon" style="color: #1976D2;">
                         <i class="bi bi-hourglass-split"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card border-success">
+            <div class="stat-card" style="border-left: 4px solid #4A7F5A;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="mb-2">SIAP DIANTAR</p>
-                        <h2 style="color: var(--status-ready);">{{ $readyOrders }}</h2>
+                        <h2 style="color: #4A7F5A;">{{ $readyOrders }}</h2>
                     </div>
-                    <div class="stat-icon" style="color: var(--status-ready);">
+                    <div class="stat-icon" style="color: #4A7F5A;">
                         <i class="bi bi-check-circle"></i>
                     </div>
                 </div>
@@ -233,10 +233,10 @@
                     <a href="{{ route('admin.categories') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">
-                                <div class="mb-3" style="font-size: 3rem; color: var(--primary-color);">
+                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
                                     <i class="bi bi-folder"></i>
                                 </div>
-                                <h5 class="mb-2">Kategori Menu</h5>
+                                <h5 class="mb-2" style="color: #1E3B2C;">Kategori Menu</h5>
                                 <p class="small mb-0">Kelola kategori makanan & minuman</p>
                             </div>
                         </div>
@@ -246,10 +246,10 @@
                     <a href="{{ route('admin.menu') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">
-                                <div class="mb-3" style="font-size: 3rem; color: var(--status-ready);">
+                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
                                     <i class="bi bi-card-list"></i>
                                 </div>
-                                <h5 class="mb-2">Menu</h5>
+                                <h5 class="mb-2" style="color: #1E3B2C;">Menu</h5>
                                 <p class="small mb-0">Kelola daftar menu restoran</p>
                             </div>
                         </div>
@@ -259,10 +259,10 @@
                     <a href="{{ route('admin.orders') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">
-                                <div class="mb-3" style="font-size: 3rem; color: var(--status-pending);">
+                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
                                     <i class="bi bi-receipt"></i>
                                 </div>
-                                <h5 class="mb-2">Pesanan</h5>
+                                <h5 class="mb-2" style="color: #1E3B2C;">Pesanan</h5>
                                 <p class="small mb-0">Kelola pesanan customer</p>
                             </div>
                         </div>
@@ -272,11 +272,63 @@
                     <a href="{{ route('admin.reports') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">
-                                <div class="mb-3" style="font-size: 3rem; color: var(--status-processing);">
+                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
                                     <i class="bi bi-graph-up"></i>
                                 </div>
-                                <h5 class="mb-2">Laporan</h5>
+                                <h5 class="mb-2" style="color: #1E3B2C;">Laporan</h5>
                                 <p class="small mb-0">Lihat laporan penjualan</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ route('admin.vouchers.index') }}" class="text-decoration-none">
+                        <div class="quick-menu-card h-100">
+                            <div class="card-body text-center">
+                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
+                                    <i class="bi bi-ticket-perforated"></i>
+                                </div>
+                                <h5 class="mb-2" style="color: #1E3B2C;">Voucher</h5>
+                                <p class="small mb-0">Kelola voucher diskon</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ route('admin.pos') }}" class="text-decoration-none">
+                        <div class="quick-menu-card h-100">
+                            <div class="card-body text-center">
+                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
+                                    <i class="bi bi-calculator"></i>
+                                </div>
+                                <h5 class="mb-2" style="color: #1E3B2C;">POS</h5>
+                                <p class="small mb-0">Point of Sale kasir</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ route('admin.qr-codes') }}" class="text-decoration-none">
+                        <div class="quick-menu-card h-100">
+                            <div class="card-body text-center">
+                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
+                                    <i class="bi bi-qr-code"></i>
+                                </div>
+                                <h5 class="mb-2" style="color: #1E3B2C;">QR Code Meja</h5>
+                                <p class="small mb-0">Generate QR code untuk meja</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ route('admin.customers') }}" class="text-decoration-none">
+                        <div class="quick-menu-card h-100">
+                            <div class="card-body text-center">
+                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
+                                    <i class="bi bi-people"></i>
+                                </div>
+                                <h5 class="mb-2" style="color: #1E3B2C;">Pelanggan</h5>
+                                <p class="small mb-0">Kelola data pelanggan</p>
                             </div>
                         </div>
                     </a>
@@ -291,41 +343,37 @@
             <div class="col-md-6">
                 <h6><i class="bi bi-info-circle me-2"></i>Fitur Utama</h6>
                 <ul class="list-unstyled">
-                    <li>
-                        <i class="bi bi-check-circle-fill me-2" style="color: var(--status-ready);"></i>
-                        Manajemen kategori dan menu makanan/minuman
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill me-2" style="color: #2A5C3F;"></i>
+                        Sistem Voucher & Diskon Pelanggan
                     </li>
-                    <li>
-                        <i class="bi bi-check-circle-fill me-2" style="color: var(--status-ready);"></i>
-                        Pemantauan pesanan pelanggan secara real-time
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill me-2" style="color: #2A5C3F;"></i>
+                        Integrasi Pembayaran QRIS Otomatis
                     </li>
-                    <li>
-                        <i class="bi bi-check-circle-fill me-2" style="color: var(--status-ready);"></i>
-                        Pengelolaan stok dan harga menu
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill me-2" style="color: #2A5C3F;"></i>
+                        Login Pelanggan via WhatsApp OTP
                     </li>
-                    <li>
-                        <i class="bi bi-check-circle-fill me-2" style="color: var(--status-ready);"></i>
-                        Laporan penjualan dan analisis
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill me-2" style="color: #2A5C3F;"></i>
+                        Point of Sale (POS) & Manajemen Stok
                     </li>
                 </ul>
             </div>
             <div class="col-md-6">
                 <h6><i class="bi bi-gear me-2"></i>Status Sistem</h6>
                 <div class="d-flex align-items-center mb-3">
-                    <span class="badge me-2" style="background-color: var(--status-ready);">Online</span>
-                    <span class="small" style="color: var(--text-light);">Sistem berjalan normal</span>
+                    <span class="badge me-2" style="background-color: #2A5C3F;">Online</span>
                 </div>
                 <div class="d-flex align-items-center mb-3">
-                    <span class="badge me-2" style="background-color: var(--status-processing);">{{ \App\Models\Category::count() }} Kategori</span>
-                    <span class="small" style="color: var(--text-light);">Kategori menu tersedia</span>
+                    <span class="badge me-2" style="background-color: #1976D2;">Platform</span>
                 </div>
                 <div class="d-flex align-items-center mb-3">
-                    <span class="badge me-2" style="background-color: var(--primary-color);">{{ \App\Models\Menu::count() }} Menu</span>
-                    <span class="small" style="color: var(--text-light);">Menu tersedia</span>
+                    <span class="badge me-2" style="background-color: #FBC02D;">In Trend</span>
                 </div>
                 <div class="d-flex align-items-center">
-                    <span class="badge me-2" style="background-color: var(--status-pending);">{{ \App\Models\User::count() }} Users</span>
-                    <span class="small" style="color: var(--text-light);">Pengguna terdaftar</span>
+                    <span class="badge me-2" style="background-color: #7E57C2;">v1.0.0</span>
                 </div>
             </div>
         </div>

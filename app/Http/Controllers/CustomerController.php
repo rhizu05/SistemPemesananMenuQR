@@ -116,9 +116,49 @@ class CustomerController extends Controller
         
         session()->put('cart', $cart);
         
+        // Calculate totals
+        $totalItems = 0;
+        $cartSubtotal = 0;
+        foreach ($cart as $item) {
+            $totalItems += $item['quantity'];
+            $cartSubtotal += $item['price'] * $item['quantity'];
+        }
+
+        // Calculate item subtotal
+        $itemSubtotal = 0;
+        if (isset($cart[$request->menu_id])) {
+            $itemSubtotal = $cart[$request->menu_id]['price'] * $cart[$request->menu_id]['quantity'];
+        }
+
+        // Calculate discount if voucher exists
+        $discount = 0;
+        $appliedVoucher = session('applied_voucher');
+        if ($appliedVoucher) {
+            // Re-validate voucher min transaction
+            $voucher = \App\Models\Voucher::find($appliedVoucher['id']);
+            if ($voucher && $cartSubtotal >= $voucher->min_transaction) {
+                $discount = $voucher->calculateDiscount($cartSubtotal);
+                // Update session discount
+                $appliedVoucher['discount'] = $discount;
+                session(['applied_voucher' => $appliedVoucher]);
+            } else {
+                // Remove voucher if min transaction not met
+                session()->forget(['applied_voucher', 'applied_voucher_code']);
+                $appliedVoucher = null;
+            }
+        }
+
+        $cartTotal = $cartSubtotal - $discount;
+        
         return response()->json([
             'success' => true,
-            'message' => 'Keranjang berhasil diupdate'
+            'message' => 'Keranjang berhasil diupdate',
+            'item_subtotal' => $itemSubtotal,
+            'cart_subtotal' => $cartSubtotal,
+            'cart_total' => $cartTotal,
+            'discount_amount' => $discount,
+            'total_items' => $totalItems,
+            'voucher_removed' => ($appliedVoucher === null && session()->has('applied_voucher_code')) // Flag if voucher was removed
         ]);
     }
 
@@ -150,10 +190,70 @@ class CustomerController extends Controller
     }
 
     // Method untuk menampilkan halaman keranjang
-    public function cart()
+    public function cart(Request $request)
     {
         $cart = session()->get('cart', []);
-        return view('customer.cart', compact('cart'));
+        
+        // Calculate subtotal
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
+        
+        // Handle voucher application
+        if ($request->has('apply_voucher')) {
+            // Check if user is logged in
+            if (!auth()->check()) {
+                return redirect()->route('login')
+                    ->with('error', 'Anda harus login terlebih dahulu untuk menggunakan voucher.')
+                    ->with('intended', route('customer.cart'));
+            }
+            
+            $code = strtoupper($request->get('apply_voucher'));
+            $voucher = \App\Models\Voucher::where('code', $code)
+                ->active()
+                ->valid()
+                ->available()
+                ->first();
+            
+            if ($voucher) {
+                $userId = auth()->id();
+                
+                // Check if user can use this voucher
+                if ($voucher->canBeUsedBy($userId)) {
+                    // Check minimum transaction
+                    if ($total >= $voucher->min_transaction) {
+                        $discount = $voucher->calculateDiscount($total);
+                        
+                        session([
+                            'applied_voucher' => [
+                                'id' => $voucher->id,
+                                'code' => $voucher->code,
+                                'name' => $voucher->name,
+                                'discount' => $discount,
+                            ],
+                            'applied_voucher_code' => $voucher->code,
+                        ]);
+                        
+                        return redirect()->route('customer.cart')->with('success', 'Voucher berhasil diterapkan!');
+                    } else {
+                        return redirect()->route('customer.cart')->with('error', 'Minimal belanja Rp ' . number_format($voucher->min_transaction, 0, ',', '.') . ' untuk menggunakan voucher ini.');
+                    }
+                } else {
+                    return redirect()->route('customer.cart')->with('error', 'Anda sudah mencapai limit penggunaan voucher ini.');
+                }
+            } else {
+                return redirect()->route('customer.cart')->with('error', 'Kode voucher tidak valid atau sudah tidak berlaku.');
+            }
+        }
+        
+        // Handle voucher removal  
+        if ($request->has('remove_voucher')) {
+            session()->forget(['applied_voucher', 'applied_voucher_code']);
+            return redirect()->route('customer.cart')->with('success', 'Voucher dihapus.');
+        }
+        
+        return view('customer.cart', compact('cart', 'total'));
     }
 
     // Method untuk membuat pesanan
@@ -198,6 +298,42 @@ class CustomerController extends Controller
             ];
         }
 
+        // Apply Voucher if exists
+        $voucher = null;
+        $discount = 0;
+        $subtotal = $totalAmount; // Store original amount
+        
+        $appliedVoucher = session('applied_voucher');
+        if ($appliedVoucher) {
+            $voucher = \App\Models\Voucher::find($appliedVoucher['id']);
+            
+            if ($voucher && $voucher->isValid() && $voucher->isAvailable()) {
+                $userId = auth()->id();
+                
+                if ($voucher->canBeUsedBy($userId)) {
+                    $discount = $appliedVoucher['discount'];
+                    $totalAmount = $subtotal - $discount; // Apply discount to final amount
+                    
+                    \Log::info('Voucher applied to order', [
+                        'voucher_code' => $voucher->code,
+                        'subtotal' => $subtotal,
+                        'discount' => $discount,
+                        'total' => $totalAmount
+                    ]);
+                }
+            }
+        }
+
+        // Add voucher discount as negative item for Midtrans
+        if ($voucher && $discount > 0) {
+            $midtransItems[] = [
+                'id' => 'VOUCHER-' . $voucher->code,
+                'price' => -$discount,
+                'quantity' => 1,
+                'name' => 'Diskon Voucher ' . $voucher->code
+            ];
+        }
+
         $qrisUrl = null;
         $paymentStatus = 'pending';
 
@@ -216,6 +352,10 @@ class CustomerController extends Controller
                     'customer_details' => [
                         'first_name' => $request->customer_name,
                         'phone' => $request->customer_phone ?? '',
+                    ],
+                    'custom_expiry' => [
+                        'expiry_duration' => 15,
+                        'unit' => 'minute',
                     ]
                 ];
                 
@@ -244,7 +384,11 @@ class CustomerController extends Controller
             'order_number' => $orderNumber,
             'user_id' => auth()->check() ? auth()->id() : null,
             'status' => 'pending',
+            'subtotal' => $subtotal,
+            'discount_amount' => $discount,
             'total_amount' => $totalAmount,
+            'voucher_id' => $voucher ? $voucher->id : null,
+            'voucher_code' => $voucher ? $voucher->code : null,
             'customer_name' => $request->customer_name,
             'customer_phone' => $request->customer_phone,
             'table_number' => $request->table_number,
@@ -271,6 +415,25 @@ class CustomerController extends Controller
             $menu->decrement('stock', $item['quantity']);
         }
 
+        // Record Voucher Usage
+        if ($voucher) {
+            \App\Models\VoucherUsage::create([
+                'voucher_id' => $voucher->id,
+                'user_id' => auth()->id(),
+                'order_id' => $order->id,
+                'discount_amount' => $discount,
+            ]);
+            
+            // Increment voucher used count
+            $voucher->increment('used_count');
+            
+            \Log::info('Voucher usage recorded', [
+                'voucher_code' => $voucher->code,
+                'order_number' => $orderNumber,
+                'user_id' => auth()->id(),
+            ]);
+        }
+
         // Simpan order number ke session untuk guest
         if (!auth()->check()) {
             $guestOrders = session()->get('guest_orders', []);
@@ -278,8 +441,8 @@ class CustomerController extends Controller
             session()->put('guest_orders', $guestOrders);
         }
 
-        // Clear cart
-        session()->forget('cart');
+        // Clear cart and voucher
+        session()->forget(['cart', 'applied_voucher', 'applied_voucher_code']);
 
         return response()->json([
             'success' => true,
@@ -294,6 +457,24 @@ class CustomerController extends Controller
     public function orderStatus($orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)->with('orderItems.menu')->firstOrFail();
+        
+        // Check for QRIS expiration manually if still pending
+        if ($order->payment_method === 'qris' && $order->payment_status === 'pending') {
+            // 15 minutes expiration
+            $expiredTime = $order->created_at->addMinutes(15);
+            
+            if (now()->greaterThan($expiredTime)) {
+                $order->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'failed'
+                ]);
+                
+                // Restore stock
+                foreach ($order->orderItems as $item) {
+                    $item->menu->increment('stock', $item->quantity);
+                }
+            }
+        }
         
         return view('customer.order-status', compact('order'));
     }
@@ -318,6 +499,26 @@ class CustomerController extends Controller
         } else {
             // Guest: tampilkan hanya riwayat dari session saat ini
             $sessionOrders = session()->get('guest_orders', []);
+            
+            // Check expiration for all pending QRIS orders in the list
+            $ordersToCheck = Order::whereIn('order_number', $sessionOrders)
+                ->where('payment_method', 'qris')
+                ->where('payment_status', 'pending')
+                ->get();
+                
+            foreach ($ordersToCheck as $order) {
+                if (now()->greaterThan($order->created_at->addMinutes(15))) {
+                    $order->update([
+                        'status' => 'cancelled',
+                        'payment_status' => 'failed'
+                    ]);
+                    // Restore stock
+                    foreach ($order->orderItems as $item) {
+                        $item->menu->increment('stock', $item->quantity);
+                    }
+                }
+            }
+
             $orders = Order::whereIn('order_number', $sessionOrders)
                 ->with('orderItems.menu')
                 ->orderBy('created_at', 'desc')

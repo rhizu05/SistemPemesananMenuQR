@@ -22,32 +22,34 @@
     <style>
         :root {
             /* Dapoer Katendjo Color Palette - Konsisten */
-            --primary-color: #2a5c3f;         /* Hijau Tua Utama */
-            --primary-dark: #1f4430;          /* Hijau Lebih Gelap */
+            --primary-color: #2A5C3F;         /* Hijau Tua Utama */
+            --primary-dark: #1E3B2C;          /* Hijau Lebih Gelap (Neutral Dark) */
             --primary-light: #3d7556;         /* Hijau Lebih Terang */
             
             /* Warna Status - Turunan dari Primary */
-            --status-pending: #f9ca24;        /* Kuning Lembut untuk Pending */
-            --status-pending-bg: #fef5e7;     /* Background Kuning Lembut */
-            --status-processing: #45b39d;     /* Biru-Hijau untuk Diproses */
-            --status-processing-bg: #e8f6f3;  /* Background Biru-Hijau */
-            --status-ready: #58d68d;          /* Hijau Muda untuk Siap */
+            /* Warna Status - Turunan dari Primary */
+            --status-pending: #F7C948;        /* Kuning Emas untuk Pending */
+            --status-pending-bg: #fef9e7;     /* Background Kuning Lembut */
+            --status-processing: #FFA552;     /* Oranye untuk Diproses */
+            --status-processing-bg: #fff5e8;  /* Background Oranye Lembut */
+            --status-ready: #46A36B;          /* Hijau Medium untuk Siap */
             --status-ready-bg: #eafaf1;       /* Background Hijau Muda */
-            --status-completed: #2a5c3f;      /* Primary untuk Selesai */
+            --status-completed: #2A5C3F;      /* Primary untuk Selesai */
             --status-cancelled: #e74c3c;      /* Merah untuk Dibatalkan */
+            --status-total: #4D7B66;          /* Hijau Medium untuk Total Pesanan */
             
             /* Warna Sekunder */
-            --secondary-color: #f5efe6;       /* Krem Background */
-            --accent-color: #3d7556;          /* Hijau Aksen */
+            --secondary-color: #4A7F5A;       /* Hijau Lebih Terang (Secondary) */
+            --accent-color: #8FC69A;          /* Accent Lembut */
             
             /* Warna Teks */
-            --text-dark: #1c1c1c;             /* Teks Utama Gelap */
+            --text-dark: #1E3B2C;             /* Neutral Dark (Judul/Teks Tebal) */
             --text-medium: #333333;           /* Teks Medium */
             --text-light: #666666;            /* Teks Light */
             --text-muted: #999999;            /* Teks Muted */
             
             /* Background */
-            --bg-light: #fafafa;              /* Background Terang */
+            --bg-light: #F3F7F4;              /* Neutral Light Background */
             --bg-white: #ffffff;              /* Background Putih */
             
             /* Warna Bootstrap Override */
@@ -108,7 +110,7 @@
 
         .navbar-brand {
             font-size: 1.5rem;
-            color: var(--secondary-color) !important;
+            color: #ffffff !important;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -119,7 +121,7 @@
             width: 50px;
             object-fit: cover;
             border-radius: 50%;
-            border: 2px solid var(--secondary-color);
+            border: 2px solid #ffffff;
         }
 
         .navbar-brand:hover {
@@ -127,7 +129,7 @@
         }
 
         .nav-link {
-            color: var(--secondary-color) !important;
+            color: #ffffff !important;
             font-weight: 500;
             padding: var(--spacing-sm) var(--spacing-md) !important;
             border-radius: var(--radius-md);
@@ -207,7 +209,7 @@
 
         .card-header {
             background-color: var(--primary-color);
-            color: var(--secondary-color);
+            color: #ffffff;
             border-bottom: none;
             padding: var(--spacing-md) var(--spacing-lg);
             font-weight: 600;
@@ -551,20 +553,16 @@
                                     <i class="bi bi-clock-history"></i> Riwayat
                                 </a>
                             </li>
-                            @if (Route::has('login'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">
-                                        <i class="bi bi-box-arrow-in-right"></i> Login
-                                    </a>
-                                </li>
-                            @endif
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">
-                                        <i class="bi bi-person-plus"></i> Daftar
-                                    </a>
-                                </li>
-                            @endif
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('login') }}">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-muted small" href="{{ route('admin.login') }}">
+                                    <i class="bi bi-shield-lock"></i> Admin
+                                </a>
+                            </li>
                         @else
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -575,27 +573,6 @@
                                     @if(Auth::user()->isAdmin())
                                         <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
                                             <i class="bi bi-speedometer2"></i> Dashboard Admin
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('admin.pos') }}">
-                                            <i class="bi bi-cash-register"></i> POS (Kasir)
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('admin.qr-codes') }}">
-                                            <i class="bi bi-qr-code"></i> QR Code Meja
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('admin.customers') }}">
-                                            <i class="bi bi-people"></i> Pelanggan
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('admin.categories') }}">
-                                            <i class="bi bi-folder"></i> Kategori Menu
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('admin.menu') }}">
-                                            <i class="bi bi-card-list"></i> Manajemen Menu
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('admin.orders') }}">
-                                            <i class="bi bi-receipt"></i> Pesanan
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('admin.reports') }}">
-                                            <i class="bi bi-graph-up"></i> Laporan
                                         </a>
                                         <div class="dropdown-divider"></div>
                                     @elseif(Auth::user()->isKitchen())

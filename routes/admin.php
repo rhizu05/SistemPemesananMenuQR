@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\VoucherController;
 
 // Routes untuk Admin
 Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->group(function () {
@@ -42,6 +43,16 @@ Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->g
     Route::get('/qr-codes', [AdminController::class, 'qrCodeManager'])->name('admin.qr-codes');
     Route::get('/qr-codes/table/{tableNumber}', [AdminController::class, 'generateTableQR'])->name('admin.qr-code.table');
     
+    // Voucher Routes
+    Route::get('/vouchers', [VoucherController::class, 'index'])->name('admin.vouchers.index');
+    Route::get('/vouchers/create', [VoucherController::class, 'create'])->name('admin.vouchers.create');
+    Route::post('/vouchers', [VoucherController::class, 'store'])->name('admin.vouchers.store');
+    Route::get('/vouchers/{id}/edit', [VoucherController::class, 'edit'])->name('admin.vouchers.edit');
+    Route::put('/vouchers/{id}', [VoucherController::class, 'update'])->name('admin.vouchers.update');
+    Route::delete('/vouchers/{id}', [VoucherController::class, 'destroy'])->name('admin.vouchers.destroy');
+    Route::patch('/vouchers/{id}/toggle', [VoucherController::class, 'toggleStatus'])->name('admin.vouchers.toggle');
+    Route::get('/vouchers/{id}/usage', [VoucherController::class, 'usageReport'])->name('admin.vouchers.usage');
+    
     // Customer Management Routes
     Route::get('/customers', [AdminController::class, 'customers'])->name('admin.customers');
     Route::get('/customers/{id}', [AdminController::class, 'customerDetail'])->name('admin.customer.detail');
@@ -68,6 +79,10 @@ Route::middleware(['prevent_kitchen'])->group(function () {
     Route::get('/order/{orderNumber}/status', [CustomerController::class, 'orderStatus'])->name('customer.order.status');
     Route::get('/order/{orderNumber}/success', [CustomerController::class, 'orderSuccess'])->name('customer.order.success');
     Route::get('/orders', [CustomerController::class, 'myOrders'])->name('customer.my-orders');
+    
+    // Voucher Routes (Guest & Authenticated)
+    Route::get('/vouchers', [VoucherController::class, 'customerIndex'])->name('customer.vouchers');
+    Route::post('/vouchers/validate', [VoucherController::class, 'validate'])->name('vouchers.validate');
 });
 
 // Routes untuk Customer (Authenticated Only)

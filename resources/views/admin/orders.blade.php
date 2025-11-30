@@ -57,7 +57,7 @@
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card bg-warning text-white">
+            <div class="card text-white" style="background-color: #F7C948;">
                 <div class="card-body">
                     <h3 class="mb-0" id="countPending">{{ $orders->where('status', 'pending')->count() }}</h3>
                     <small>Pending</small>
@@ -65,7 +65,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
+            <div class="card text-white" style="background-color: #FFA552;">
                 <div class="card-body">
                     <h3 class="mb-0" id="countPreparing">{{ $orders->where('status', 'preparing')->count() }}</h3>
                     <small>Diproses</small>
@@ -73,7 +73,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-success text-white">
+            <div class="card text-white" style="background-color: #46A36B;">
                 <div class="card-body">
                     <h3 class="mb-0" id="countReady">{{ $orders->where('status', 'ready')->count() }}</h3>
                     <small>Siap</small>
@@ -81,7 +81,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-info text-white">
+            <div class="card text-white" style="background-color: #4D7B66;">
                 <div class="card-body">
                     <h3 class="mb-0" id="countTotal">{{ $totalOrders }}</h3>
                     <small>Total Pesanan</small>
@@ -136,9 +136,9 @@
                             </td>
                             <td>
                                 @if($order->order_type === 'dine_in')
-                                    <span class="badge bg-info"><i class="bi bi-shop"></i> Dine In</span>
+                                    <span class="badge text-white" style="background-color: #3B82F6;"><i class="bi bi-shop"></i> Dine In</span>
                                 @elseif($order->order_type === 'takeaway')
-                                    <span class="badge bg-warning"><i class="bi bi-bag"></i> Takeaway</span>
+                                    <span class="badge text-white" style="background-color: #8B5CF6;"><i class="bi bi-bag"></i> Takeaway</span>
                                 @else
                                     <span class="badge bg-primary"><i class="bi bi-truck"></i> Delivery</span>
                                 @endif
@@ -150,28 +150,28 @@
                                 <small class="text-muted">{{ ucfirst($order->payment_method ?? 'cash') }}</small>
                                 <br>
                                 @if($order->payment_status === 'paid')
-                                    <span class="badge bg-success">Lunas</span>
+                                    <span class="badge text-white" style="background-color: #46A36B;">Lunas</span>
                                 @else
-                                    <span class="badge bg-warning">Belum</span>
+                                    <span class="badge text-white" style="background-color: #FFA552;">Belum</span>
                                 @endif
                             </td>
                             <td>
                                 @if($order->status === 'pending')
-                                    <span class="badge bg-warning">Pending</span>
+                                    <span class="badge text-white" style="background-color: #F7C948;">Pending</span>
                                 @elseif($order->status === 'confirmed')
-                                    <span class="badge bg-info">Dikonfirmasi</span>
+                                    <span class="badge text-white" style="background-color: #3B82F6;">Dikonfirmasi</span>
                                 @elseif($order->status === 'preparing')
-                                    <span class="badge bg-primary">Diproses</span>
+                                    <span class="badge text-white" style="background-color: #FFA552;">Diproses</span>
                                 @elseif($order->status === 'ready')
-                                    <span class="badge bg-success">Siap</span>
+                                    <span class="badge text-white" style="background-color: #46A36B;">Siap</span>
                                 @elseif($order->status === 'completed')
-                                    <span class="badge bg-success">Selesai</span>
+                                    <span class="badge text-white" style="background-color: #46A36B;">Selesai</span>
                                 @else
-                                    <span class="badge bg-danger">Dibatalkan</span>
+                                    <span class="badge text-white" style="background-color: #D9534F;">Dibatalkan</span>
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('admin.order.detail', $order->id) }}" class="btn btn-info btn-sm">
+                                <a href="{{ route('admin.order.detail', $order->id) }}" class="btn btn-sm text-white" style="background-color: #2563EB;">
                                     <i class="bi bi-eye"></i> Detail
                                 </a>
                             </td>
@@ -191,6 +191,15 @@
         <div class="card-footer">
             {{ $orders->links() }}
         </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ route('admin.dashboard') }}" class="btn text-white" 
+           style="background-color: #4A7F5A; transition: all 0.3s;"
+           onmouseover="this.style.backgroundColor='#3d6b4a'; this.style.transform='translateY(-2px)';" 
+           onmouseout="this.style.backgroundColor='#4A7F5A'; this.style.transform='translateY(0)';">
+            <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+        </a>
     </div>
 </div>
 

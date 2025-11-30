@@ -84,10 +84,27 @@
                                 @endforeach
                             </tbody>
                             <tfoot>
-                                <tr>
-                                    <th colspan="3" class="text-end">Total:</th>
-                                    <th>Rp {{ number_format($order->total_amount, 2, ',', '.') }}</th>
-                                </tr>
+                                @if($order->voucher_code)
+                                    <tr>
+                                        <th colspan="3" class="text-end">Subtotal:</th>
+                                        <th>Rp {{ number_format($order->subtotal ?? $order->total_amount + $order->discount_amount, 0, ',', '.') }}</th>
+                                    </tr>
+                                    <tr class="table-success">
+                                        <th colspan="3" class="text-end">
+                                            <i class="bi bi-ticket-perforated"></i> Diskon ({{ $order->voucher_code }}):
+                                        </th>
+                                        <th class="text-success">-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</th>
+                                    </tr>
+                                    <tr class="table-primary">
+                                        <th colspan="3" class="text-end">Total Bayar:</th>
+                                        <th>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</th>
+                                    </tr>
+                                @else
+                                    <tr>
+                                        <th colspan="3" class="text-end">Total:</th>
+                                        <th>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</th>
+                                    </tr>
+                                @endif
                             </tfoot>
                         </table>
                     </div>

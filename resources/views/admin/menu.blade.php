@@ -10,7 +10,10 @@
                 <h2><i class="bi bi-card-list"></i> Manajemen Menu</h2>
                 <p>Kelola menu restoran</p>
             </div>
-            <a href="{{ route('admin.menu.create') }}" class="btn btn-primary">
+            <a href="{{ route('admin.menu.create') }}" class="btn text-white" 
+               style="background-color: #2A5C3F; transition: all 0.3s;"
+               onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+               onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
                 <i class="bi bi-plus-circle"></i> Tambah Menu
             </a>
         </div>
@@ -31,8 +34,17 @@
     @endif
 
     <div class="card">
-        <div class="card-header">
-            <i class="bi bi-list-ul"></i> Daftar Menu
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #2A5C3F;">
+            <span><i class="bi bi-list-ul"></i> Daftar Menu</span>
+            <form action="{{ route('admin.menu') }}" method="GET" class="d-flex" style="max-width: 300px;">
+                <div class="input-group input-group-sm">
+                    <input type="text" name="search" class="form-control" placeholder="Cari menu..." value="{{ request('search') }}">
+                    <button class="btn btn-light" type="submit"><i class="bi bi-search"></i></button>
+                    @if(request('search'))
+                        <a href="{{ route('admin.menu') }}" class="btn btn-danger"><i class="bi bi-x"></i></a>
+                    @endif
+                </div>
+            </form>
         </div>
         <div class="card-body p-0">
             @if($menus->count() > 0)
@@ -74,31 +86,32 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge bg-secondary">
+                                        <span class="badge text-white" style="background-color: #8FC69A;">
                                             {{ $menu->category->name ?? '-' }}
                                         </span>
                                     </td>
                                     <td><strong>Rp {{ number_format($menu->price, 0, ',', '.') }}</strong></td>
                                     <td class="text-center">
                                         @if($menu->stock > 10)
-                                            <span class="badge bg-success">{{ $menu->stock }}</span>
+                                            <span class="badge text-white" style="background-color: #4A7F5A;">{{ $menu->stock }}</span>
                                         @elseif($menu->stock > 0)
-                                            <span class="badge bg-warning">{{ $menu->stock }}</span>
+                                            <span class="badge text-dark" style="background-color: #FBC02D;">{{ $menu->stock }}</span>
                                         @else
-                                            <span class="badge bg-danger">{{ $menu->stock }}</span>
+                                            <span class="badge text-white" style="background-color: #D32F2F;">Habis</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
                                         @if($menu->is_available)
-                                            <span class="badge bg-success">Tersedia</span>
+                                            <span class="badge text-white" style="background-color: #2A5C3F;">Tersedia</span>
                                         @else
-                                            <span class="badge bg-secondary">Tidak Tersedia</span>
+                                            <span class="badge text-white" style="background-color: #D32F2F;">Tidak Tersedia</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <div class="btn-group" role="group">
+                                        <div class="d-flex gap-1 justify-content-center">
                                             <a href="{{ route('admin.menu.edit', $menu->id) }}" 
-                                               class="btn btn-sm btn-warning" 
+                                               class="btn btn-sm text-white" 
+                                               style="background-color: #4A7F5A;"
                                                title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
@@ -109,7 +122,8 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                        class="btn btn-sm btn-danger" 
+                                                        class="btn btn-sm text-white" 
+                                                        style="background-color: #D32F2F;"
                                                         title="Hapus">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -135,7 +149,10 @@
     </div>
 
     <div class="mt-3">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+        <a href="{{ route('admin.dashboard') }}" class="btn text-white" 
+           style="background-color: #4A7F5A; transition: all 0.3s;"
+           onmouseover="this.style.backgroundColor='#3d6b4a'; this.style.transform='translateY(-2px)';" 
+           onmouseout="this.style.backgroundColor='#4A7F5A'; this.style.transform='translateY(0)';">
             <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
         </a>
     </div>

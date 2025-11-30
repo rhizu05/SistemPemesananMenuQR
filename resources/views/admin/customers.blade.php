@@ -30,7 +30,7 @@
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="card bg-primary text-white">
+            <div class="card text-white" style="background-color: #1976D2;">
                 <div class="card-body">
                     <h3 class="mb-0">{{ $customers->total() }}</h3>
                     <small>Total Pelanggan</small>
@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-success text-white">
+            <div class="card text-white" style="background-color: #2A5C3F;">
                 <div class="card-body">
                     <h3 class="mb-0">{{ $customers->where('phone_verified_at', '!=', null)->count() }}</h3>
                     <small>Terverifikasi</small>
@@ -46,7 +46,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-info text-white">
+            <div class="card text-white" style="background-color: #8FC69A;">
                 <div class="card-body">
                     <h3 class="mb-0">{{ $customers->sum('orders_count') }}</h3>
                     <small>Total Pesanan</small>
@@ -56,7 +56,7 @@
     </div>
 
     <div class="card">
-        <div class="card-header">
+        <div class="card-header text-white" style="background-color: #2A5C3F;">
             <i class="bi bi-list-ul"></i> Daftar Pelanggan
         </div>
         <div class="card-body p-0">
@@ -82,7 +82,7 @@
                                     <td>
                                         <strong>{{ $customer->name }}</strong>
                                         @if($customer->phone_verified_at)
-                                            <br><small class="text-success"><i class="bi bi-check-circle-fill"></i> Terverifikasi</small>
+                                            <br><small style="color: #4A7F5A;"><i class="bi bi-check-circle-fill"></i> Terverifikasi</small>
                                         @endif
                                     </td>
                                     <td>{{ $customer->phone }}</td>
@@ -91,7 +91,7 @@
                                     </td>
                                     <td class="text-center">
                                         @if($customer->orders_count > 0)
-                                            <span class="badge bg-info">{{ $customer->orders_count }} pesanan</span>
+                                            <span class="badge text-white" style="background-color: #8FC69A;">{{ $customer->orders_count }} pesanan</span>
                                         @else
                                             <span class="badge bg-secondary">0</span>
                                         @endif
@@ -102,7 +102,7 @@
                                     </td>
                                     <td class="text-center">
                                         @if($customer->is_active ?? true)
-                                            <span class="badge bg-success">Aktif</span>
+                                            <span class="badge text-white" style="background-color: #2A5C3F;">Aktif</span>
                                         @else
                                             <span class="badge bg-secondary">Nonaktif</span>
                                         @endif
@@ -110,30 +110,24 @@
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('admin.customer.detail', $customer->id) }}" 
-                                               class="btn btn-sm btn-info" 
+                                               class="btn btn-sm text-white d-inline-flex align-items-center justify-content-center" 
+                                               style="background-color: #4A7F5A; min-width: 36px; height: 31px; border-radius: 6px; margin-right: 4px;"
                                                title="Detail">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            @if($customer->orders_count == 0)
-                                                <form action="{{ route('admin.customer.delete', $customer->id) }}" 
-                                                      method="POST" 
-                                                      class="d-inline"
-                                                      onsubmit="return confirm('Yakin ingin menghapus pelanggan ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" 
-                                                            class="btn btn-sm btn-danger" 
-                                                            title="Hapus">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <button class="btn btn-sm btn-danger" 
-                                                        disabled 
-                                                        title="Tidak dapat dihapus">
+                                            <form action="{{ route('admin.customer.delete', $customer->id) }}" 
+                                                  method="POST" 
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Yakin ingin menghapus pelanggan {{ $customer->name }}?\n\n{{ $customer->orders_count > 0 ? 'Customer memiliki ' . $customer->orders_count . ' pesanan. Pesanan akan diubah menjadi pesanan guest (tanpa customer).' : 'Customer tidak memiliki pesanan.' }}')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                        class="btn btn-sm text-white d-inline-flex align-items-center justify-content-center" 
+                                                        style="background-color: #D32F2F; min-width: 36px; height: 31px; border-radius: 6px;"
+                                                        title="Hapus">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
-                                            @endif
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -157,7 +151,10 @@
     </div>
 
     <div class="mt-3">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+        <a href="{{ route('admin.dashboard') }}" class="btn text-white" 
+           style="background-color: #4A7F5A; transition: all 0.3s;"
+           onmouseover="this.style.backgroundColor='#3d6b4a'; this.style.transform='translateY(-2px)';" 
+           onmouseout="this.style.backgroundColor='#4A7F5A'; this.style.transform='translateY(0)';">
             <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
         </a>
     </div>

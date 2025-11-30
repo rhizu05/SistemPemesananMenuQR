@@ -10,7 +10,10 @@
                 <h2><i class="bi bi-folder"></i> Manajemen Kategori Menu</h2>
                 <p>Kelola kategori menu restoran</p>
             </div>
-            <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">
+            <a href="{{ route('admin.categories.create') }}" class="btn text-white" 
+               style="background-color: #2A5C3F; transition: all 0.3s;"
+               onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+               onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
                 <i class="bi bi-plus-circle"></i> Tambah Kategori
             </a>
         </div>
@@ -31,8 +34,17 @@
     @endif
 
     <div class="card">
-        <div class="card-header">
-            <i class="bi bi-list-ul"></i> Daftar Kategori
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #2A5C3F;">
+            <span><i class="bi bi-list-ul"></i> Daftar Kategori</span>
+            <form action="{{ route('admin.categories') }}" method="GET" class="d-flex" style="max-width: 300px;">
+                <div class="input-group input-group-sm">
+                    <input type="text" name="search" class="form-control" placeholder="Cari kategori..." value="{{ request('search') }}">
+                    <button class="btn btn-light" type="submit"><i class="bi bi-search"></i></button>
+                    @if(request('search'))
+                        <a href="{{ route('admin.categories') }}" class="btn btn-danger"><i class="bi bi-x"></i></a>
+                    @endif
+                </div>
+            </form>
         </div>
         <div class="card-body p-0">
             @if($categories->count() > 0)
@@ -59,21 +71,22 @@
                                         </small>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge bg-info">
+                                        <span class="badge text-white" style="background-color: #8FC69A;">
                                             {{ $category->menus_count }} menu
                                         </span>
                                     </td>
                                     <td class="text-center">
                                         @if($category->is_active)
-                                            <span class="badge bg-success">Aktif</span>
+                                            <span class="badge text-white" style="background-color: #2A5C3F;">Aktif</span>
                                         @else
-                                            <span class="badge bg-secondary">Nonaktif</span>
+                                            <span class="badge text-white" style="background-color: #B0BEC5;">Nonaktif</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <div class="btn-group" role="group">
+                                        <div class="d-flex gap-1 justify-content-center">
                                             <a href="{{ route('admin.categories.edit', $category->id) }}" 
-                                               class="btn btn-sm btn-warning" 
+                                               class="btn btn-sm text-white" 
+                                               style="background-color: #4A7F5A;"
                                                title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
@@ -84,7 +97,8 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                        class="btn btn-sm btn-danger" 
+                                                        class="btn btn-sm text-white" 
+                                                        style="background-color: #D32F2F;"
                                                         title="Hapus"
                                                         {{ $category->menus_count > 0 ? 'disabled' : '' }}>
                                                     <i class="bi bi-trash"></i>
@@ -116,7 +130,10 @@
     </div>
 
     <div class="mt-3">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+        <a href="{{ route('admin.dashboard') }}" class="btn text-white" 
+           style="background-color: #4A7F5A; transition: all 0.3s;"
+           onmouseover="this.style.backgroundColor='#3d6b4a'; this.style.transform='translateY(-2px)';" 
+           onmouseout="this.style.backgroundColor='#4A7F5A'; this.style.transform='translateY(0)';">
             <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
         </a>
     </div>

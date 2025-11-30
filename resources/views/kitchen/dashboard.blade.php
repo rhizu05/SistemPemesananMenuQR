@@ -12,7 +12,7 @@
     <!-- Stats -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="card bg-warning text-white">
+            <div class="card text-white" style="background-color: #FBC02D;">
                 <div class="card-body text-center">
                     <h1 class="display-4 mb-0">{{ $confirmedOrders->count() }}</h1>
                     <p class="mb-0">Pesanan Baru</p>
@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-primary text-white">
+            <div class="card text-white" style="background-color: #1976D2;">
                 <div class="card-body text-center">
                     <h1 class="display-4 mb-0">{{ $preparingOrders->count() }}</h1>
                     <p class="mb-0">Sedang Diproses</p>
@@ -28,7 +28,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-success text-white">
+            <div class="card text-white" style="background-color: #2A5C3F;">
                 <div class="card-body text-center">
                     <h1 class="display-4 mb-0">{{ $readyOrders->count() }}</h1>
                     <p class="mb-0">Siap Disajikan</p>
@@ -39,32 +39,32 @@
 
     <!-- Sedang Diproses (Preparing) -->
     @if($preparingOrders->count() > 0)
-    <div class="card mb-4 border-primary">
-        <div class="card-header bg-primary text-white">
+    <div class="card mb-4" style="border-color: #1976D2;">
+        <div class="card-header text-white" style="background-color: #1976D2;">
             <h4 class="mb-0"><i class="bi bi-fire"></i> Sedang Diproses ({{ $preparingOrders->count() }})</h4>
         </div>
         <div class="card-body p-0">
             <div class="row g-3 p-3">
                 @foreach($preparingOrders as $order)
                 <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 border-primary">
+                    <div class="card h-100" style="border: 2px solid #E3F2FD;">
                         <div class="card-header bg-light">
                             <div class="d-flex justify-content-between align-items-center">
-                                <strong class="text-primary">{{ $order->order_number }}</strong>
-                                <span class="badge bg-primary">{{ $order->order_type }}</span>
+                                <strong style="color: #1976D2;">{{ $order->order_number }}</strong>
+                                <span class="badge" style="background-color: #1976D2;">{{ str_replace('_', ' ', strtoupper($order->order_type)) }}</span>
                             </div>
                             <small class="text-muted">Mulai: {{ $order->updated_at->format('H:i') }}</small>
                         </div>
                         <div class="card-body">
                             <h6 class="mb-2">{{ $order->customer_name }}</h6>
                             @if($order->table_number)
-                                <p class="mb-2"><i class="bi bi-geo-alt"></i> Meja: <strong>{{ $order->table_number }}</strong></p>
+                                <p class="mb-2" style="color: #1976D2;"><i class="bi bi-geo-alt"></i> Meja: <strong>{{ $order->table_number }}</strong></p>
                             @endif
                             <hr>
                             <ul class="list-unstyled mb-0">
                                 @foreach($order->orderItems as $item)
                                 <li class="mb-2">
-                                    <strong class="text-primary">{{ $item->quantity }}x</strong> {{ $item->menu->name }}
+                                    <strong style="color: #1976D2;">{{ $item->quantity }}x</strong> {{ $item->menu->name }}
                                     @if($item->special_instructions)
                                         <br><small class="text-danger"><i class="bi bi-exclamation-circle"></i> {{ $item->special_instructions }}</small>
                                     @endif
@@ -73,7 +73,10 @@
                             </ul>
                         </div>
                         <div class="card-footer">
-                            <button type="button" class="btn btn-success w-100 btn-mark-completed" data-order-id="{{ $order->id }}">
+                            <button type="button" class="btn w-100 btn-mark-completed text-white" data-order-id="{{ $order->id }}"
+                                    style="background-color: #2A5C3F; transition: all 0.3s;"
+                                    onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+                                    onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
                                 <i class="bi bi-check-circle-fill"></i> Tandai Selesai
                             </button>
                         </div>
@@ -88,7 +91,7 @@
     @if($preparingOrders->count() == 0)
     <div class="card">
         <div class="card-body text-center py-5">
-            <i class="bi bi-check-circle" style="font-size: 5rem; color: #28a745;"></i>
+            <i class="bi bi-check-circle" style="font-size: 5rem; color: #2A5C3F;"></i>
             <h3 class="mt-3">Semua Pesanan Selesai!</h3>
             <p class="text-muted">Tidak ada pesanan yang perlu diproses saat ini</p>
         </div>

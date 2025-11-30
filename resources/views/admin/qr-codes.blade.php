@@ -72,6 +72,15 @@
 
     <!-- Generated QR Codes -->
     <div id="batchResults" class="mt-4"></div>
+
+    <div class="mt-3">
+        <a href="{{ route('admin.dashboard') }}" class="btn text-white" 
+           style="background-color: #4A7F5A; transition: all 0.3s;"
+           onmouseover="this.style.backgroundColor='#3d6b4a'; this.style.transform='translateY(-2px)';" 
+           onmouseout="this.style.backgroundColor='#4A7F5A'; this.style.transform='translateY(0)';">
+            <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+        </a>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>

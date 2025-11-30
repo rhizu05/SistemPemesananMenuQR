@@ -21,11 +21,11 @@
                         </button>
                         
                         <div class="d-flex gap-2 overflow-auto category-scroll flex-grow-1" id="categoryContainer" style="scrollbar-width: none; -ms-overflow-style: none; white-space: nowrap; scroll-behavior: smooth;">
-                            <button type="button" class="btn btn-outline-primary rounded-pill px-3 active flex-shrink-0" data-category="all">
+                            <button type="button" class="btn rounded-pill px-3 active flex-shrink-0 text-white" data-category="all" style="background-color: #2A5C3F; border-color: #2A5C3F;">
                                 <i class="bi bi-grid-fill me-1"></i> Semua
                             </button>
                             @foreach($categories as $category)
-                                <button type="button" class="btn btn-outline-primary rounded-pill px-3 flex-shrink-0" data-category="{{ $category->id }}">
+                                <button type="button" class="btn btn-outline rounded-pill px-3 flex-shrink-0" data-category="{{ $category->id }}" style="color: #4A7F5A; border-color: #4A7F5A;">
                                     {{ $category->name }}
                                 </button>
                             @endforeach
@@ -65,8 +65,8 @@
                                     @endif
                                     <div class="card-body p-2">
                                         <h6 class="card-title mb-1" style="font-size: 0.9rem;">{{ $menu->name }}</h6>
-                                        <p class="text-primary fw-bold mb-1">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
-                                        <small class="text-muted">Stok: {{ $menu->stock }}</small>
+                                        <p class="fw-bold mb-1" style="color: #2A5C3F;">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+                                        <small class="{{ $menu->stock < 5 ? 'text-dark' : '' }}" style="{{ $menu->stock < 5 ? 'background-color: #FBC02D; padding: 2px 6px; border-radius: 3px;' : 'color: #4A7F5A;' }}">Stok: {{ $menu->stock }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -79,7 +79,7 @@
         <!-- Cart Section (Right) -->
         <div class="col-lg-4">
             <div class="card sticky-top" style="top: 20px;">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header text-white" style="background-color: #1976D2;">
                     <i class="bi bi-cart3"></i> Keranjang Pesanan
                 </div>
                 <div class="card-body">
@@ -109,17 +109,9 @@
 
                     <!-- Total -->
                     <div class="border-top pt-3 mb-3">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal:</span>
-                            <strong id="subtotal">Rp 0</strong>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Pajak (10%):</span>
-                            <strong id="tax">Rp 0</strong>
-                        </div>
                         <div class="d-flex justify-content-between">
                             <strong>Total:</strong>
-                            <h5 class="text-primary mb-0" id="total">Rp 0</h5>
+                            <h5 class="fw-bold mb-0" id="total" style="color: #2A5C3F;">Rp 0</h5>
                         </div>
                     </div>
 
@@ -143,11 +135,17 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-success" id="processOrder">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn text-white" id="processOrder" 
+                                style="background-color: #2A5C3F; flex: 7; transition: all 0.3s;"
+                                onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';" 
+                                onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
                             <i class="bi bi-check-circle"></i> Proses Pesanan
                         </button>
-                        <button type="button" class="btn btn-danger btn-sm" id="clearCart">
+                        <button type="button" class="btn btn-sm text-white" id="clearCart" 
+                                style="background-color: #D32F2F; flex: 3; transition: all 0.3s;"
+                                onmouseover="this.style.backgroundColor='#B71C1C'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';" 
+                                onmouseout="this.style.backgroundColor='#D32F2F'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
                             <i class="bi bi-trash"></i> Kosongkan
                         </button>
                     </div>
@@ -235,7 +233,35 @@
 .menu-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    border-color: var(--primary-color);
+    border-color: #2A5C3F;
+}
+
+.menu-card:active {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+    border-color: #2A5C3F;
+    background-color: transparent !important;
+}
+
+.menu-card:focus,
+.menu-card:focus-visible {
+    outline: none;
+    background-color: transparent !important;
+}
+
+/* Prevent any background on menu card and all children */
+.menu-card,
+.menu-card *,
+.menu-card:hover,
+.menu-card:active,
+.menu-card:focus,
+.menu-card:visited {
+    background-color: transparent !important;
+}
+
+.menu-card .card-body,
+.menu-card .card-img-top {
+    background-color: white !important;
 }
 
 .cart-item {
@@ -306,9 +332,22 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const category = this.dataset.category;
             
-            // Update active button
-            document.querySelectorAll('[data-category]').forEach(b => b.classList.remove('active'));
+            // Update active button with custom colors
+            document.querySelectorAll('[data-category]').forEach(b => {
+                b.classList.remove('active');
+                // Reset to inactive state
+                b.style.backgroundColor = 'transparent';
+                b.style.color = '#4A7F5A';
+                b.style.borderColor = '#4A7F5A';
+                b.classList.remove('text-white');
+            });
+            
+            // Set active state
             this.classList.add('active');
+            this.style.backgroundColor = '#2A5C3F';
+            this.style.borderColor = '#2A5C3F';
+            this.style.color = '#ffffff';
+            this.classList.add('text-white');
             
             // Filter menu items
             document.querySelectorAll('.menu-item').forEach(item => {
@@ -367,9 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const amountPaid = parseFloat(this.value) || 0;
         
         // Calculate total
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const tax = subtotal * 0.1;
-        const total = subtotal + tax;
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         const change = amountPaid - total;
         const changeDisplay = document.getElementById('changeAmountDisplay');
@@ -391,24 +428,24 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Keranjang masih kosong!');
             return;
         }
-        
-        const customerName = document.getElementById('customerName').value.trim();
-        const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
-        const paymentMethod = document.getElementById('paymentMethod').value;
-        
-        // Calculate total
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const tax = subtotal * 0.1;
-        const total = subtotal + tax;
 
+        // Get values from form
+        const customerName = document.getElementById('customerName').value.trim();
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const amountPaidInput = parseFloat(document.getElementById('amountPaid').value) || 0;
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        // Validasi customer name
         if (!customerName) {
-            alert('Mohon isi nama pelanggan!');
+            alert('Nama pelanggan harus diisi!');
+            document.getElementById('customerName').focus();
             return;
         }
 
         // Validasi uang dibayar hanya untuk cash
-        if (paymentMethod === 'cash' && amountPaid < total) {
+        if (paymentMethod === 'cash' && amountPaidInput < total) {
             alert('Uang yang dibayar kurang!');
+            document.getElementById('amountPaid').focus();
             return;
         }
         
@@ -418,11 +455,11 @@ document.addEventListener('DOMContentLoaded', function() {
             table_number: null,
             order_type: document.getElementById('orderType').value,
             payment_method: paymentMethod,
-            amount_paid: paymentMethod === 'qris' ? total : amountPaid,
+            amount_paid: paymentMethod === 'qris' ? total : amountPaidInput,
             items: cart.map(item => ({
                 menu_id: item.menu_id,
                 quantity: item.quantity,
-                notes: item.notes
+                notes: item.notes || ''
             }))
         };
         
@@ -440,7 +477,14 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(orderData)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.message || `Server error: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 // Cek jika QRIS
@@ -496,11 +540,12 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat memproses pesanan');
+            console.error('Order Data:', orderData);
+            alert('Terjadi kesalahan saat memproses pesanan: ' + error.message);
         })
         .finally(() => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-check-circle"></i> Proses Pesanan';
+            btn.innerHTML = '<i class=\"bi bi-check-circle\"></i> Proses Pesanan';
         });
     });
 });
@@ -545,12 +590,8 @@ function updateCart() {
     }
     
     // Update totals
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const tax = subtotal * 0.1;
-    const total = subtotal + tax;
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
-    document.getElementById('subtotal').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-    document.getElementById('tax').textContent = 'Rp ' + tax.toLocaleString('id-ID');
     document.getElementById('total').textContent = 'Rp ' + total.toLocaleString('id-ID');
     
     // Trigger change calculation if amount paid is filled
@@ -649,4 +690,14 @@ function checkPaymentStatus(isManual = false) {
         });
 }
 </script>
+
+    <div class="mt-3 ms-3">
+        <a href="{{ route('admin.dashboard') }}" class="btn text-white" 
+           style="background-color: #4A7F5A; transition: all 0.3s;"
+           onmouseover="this.style.backgroundColor='#3d6b4a'; this.style.transform='translateY(-2px)';" 
+           onmouseout="this.style.backgroundColor='#4A7F5A'; this.style.transform='translateY(0)';">
+            <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+        </a>
+    </div>
+</div>
 @endsection

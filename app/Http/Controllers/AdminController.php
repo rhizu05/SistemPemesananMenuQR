@@ -24,9 +24,17 @@ class AdminController extends Controller
     // ========== CATEGORY MANAGEMENT ==========
     
     // Menampilkan daftar kategori
-    public function categories()
+    public function categories(Request $request)
     {
-        $categories = Category::withCount('menus')->get();
+        $query = Category::withCount('menus');
+        
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+        }
+        
+        $categories = $query->get();
         return view('admin.categories', compact('categories'));
     }
 
@@ -93,9 +101,20 @@ class AdminController extends Controller
     }
 
     // ========== MENU MANAGEMENT ==========
-    public function menu()
+    public function menu(Request $request)
     {
-        $menus = Menu::with('category')->get();
+        $query = Menu::with('category');
+        
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('category', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+        }
+        
+        $menus = $query->get();
         return view('admin.menu', compact('menus'));
     }
 
@@ -192,6 +211,24 @@ class AdminController extends Controller
     // Method untuk manajemen pesanan
     public function orders()
     {
+        // Check expiration for all pending QRIS orders
+        $ordersToCheck = Order::where('payment_method', 'qris')
+            ->where('payment_status', 'pending')
+            ->get();
+            
+        foreach ($ordersToCheck as $order) {
+            if (now()->greaterThan($order->created_at->addMinutes(15))) {
+                $order->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'failed'
+                ]);
+                // Restore stock
+                foreach ($order->orderItems as $item) {
+                    $item->menu->increment('stock', $item->quantity);
+                }
+            }
+        }
+
         $orders = Order::with('user', 'orderItems.menu')->orderBy('created_at', 'desc')->paginate(10);
         $totalOrders = Order::count(); // Hitung semua pesanan, bukan hanya yang di-paginate
         return view('admin.orders', compact('orders', 'totalOrders'));
@@ -343,150 +380,172 @@ class AdminController extends Controller
     // Membuat pesanan dari POS
     public function createPOSOrder(Request $request)
     {
-        $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'nullable|string|max:20',
-            'table_number' => 'nullable|string|max:10',
-            'order_type' => 'required|in:dine_in,takeaway,delivery',
-            'special_requests' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.menu_id' => 'required|exists:menus,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.notes' => 'nullable|string|max:255',
-            'payment_method' => 'required|in:cash,card,qris',
-            'amount_paid' => 'nullable|numeric|min:0'
-        ]);
-
-        // Buat nomor pesanan unik
-        $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(\Str::random(6));
-
-        // Hitung total dan siapkan item details untuk Midtrans
-        $totalAmount = 0;
-        $midtransItems = [];
-        
-        foreach ($request->items as $item) {
-            $menu = Menu::findOrFail($item['menu_id']);
-            $totalAmount += $menu->price * $item['quantity'];
-            
-            $midtransItems[] = [
-                'id' => $menu->id,
-                'price' => $menu->price,
-                'quantity' => $item['quantity'],
-                'name' => substr($menu->name, 0, 50)
-            ];
-        }
-
-        // Siapkan data pembayaran
-        $amountPaid = $request->amount_paid;
-        $changeAmount = 0;
-        $paymentStatus = 'pending';
-        $paidAt = null;
-        $qrisUrl = null;
-
-        // Logika Pembayaran
-        if ($request->payment_method === 'qris') {
-            // Integrasi Midtrans QRIS
-            try {
-                $this->configureMidtrans();
-                
-                // DEBUG: Log server key (partial)
-                $serverKey = config('services.midtrans.server_key');
-                \Log::info('Midtrans Config Check', [
-                    'server_key_exists' => !empty($serverKey),
-                    'server_key_prefix' => substr($serverKey, 0, 5) . '...',
-                    'is_production' => config('services.midtrans.is_production')
-                ]);
-
-                $params = [
-                    'payment_type' => 'qris',
-                    'transaction_details' => [
-                        'order_id' => $orderNumber,
-                        'gross_amount' => $totalAmount,
-                    ],
-                    'item_details' => $midtransItems,
-                    'customer_details' => [
-                        'first_name' => $request->customer_name,
-                        'phone' => $request->customer_phone ?? '',
-                    ]
-                ];
-                
-                $response = \Midtrans\CoreApi::charge($params);
-                
-                // Ambil URL QR Code
-                if (isset($response->actions)) {
-                    foreach ($response->actions as $action) {
-                        if ($action->name === 'generate-qr-code') {
-                            $qrisUrl = $action->url;
-                            break;
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                \Log::error('Midtrans Error: ' . $e->getMessage());
-                // Jika gagal generate QR, kembalikan error
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'Gagal memproses QRIS: ' . $e->getMessage()
-                ], 500);
-            }
-        } else {
-            // Pembayaran Tunai
-            if ($amountPaid !== null) {
-                if ($amountPaid >= $totalAmount) {
-                    $paymentStatus = 'paid';
-                    $changeAmount = $amountPaid - $totalAmount;
-                    $paidAt = now();
-                }
-            } else if ($request->payment_method === 'cash') {
-                // Jika metode pembayaran tunai dan amount_paid tidak dispesifikasikan,
-                // asumsikan pembayaran pas atau akan dihitung nanti
-                $paymentStatus = 'paid';
-            }
-        }
-
-        // Buat pesanan
-        $order = Order::create([
-            'order_number' => $orderNumber,
-            'user_id' => null, // POS order tidak terhubung ke user
-            'status' => 'confirmed', // Langsung confirmed karena dibuat admin
-            'total_amount' => $totalAmount,
-            'customer_name' => $request->customer_name,
-            'customer_phone' => $request->customer_phone ?? '-',
-            'table_number' => $request->table_number,
-            'order_type' => $request->order_type,
-            'special_requests' => $request->special_requests,
-            'payment_status' => $paymentStatus,
-            'payment_method' => $request->payment_method,
-            'amount_paid' => $amountPaid,
-            'change_amount' => $changeAmount,
-            'paid_at' => $paidAt
-        ]);
-
-        // Buat item pesanan
-        foreach ($request->items as $item) {
-            $menu = Menu::findOrFail($item['menu_id']);
-
-            \App\Models\OrderItem::create([
-                'order_id' => $order->id,
-                'menu_id' => $item['menu_id'],
-                'quantity' => $item['quantity'],
-                'price' => $menu->price,
-                'special_instructions' => $item['notes'] ?? null
+        try {
+            $request->validate([
+                'customer_name' => 'required|string|max:255',
+                'customer_phone' => 'nullable|string|max:20',
+                'table_number' => 'nullable|string|max:10',
+                'order_type' => 'required|in:dine_in,takeaway,delivery',
+                'special_requests' => 'nullable|string',
+                'items' => 'required|array|min:1',
+                'items.*.menu_id' => 'required|exists:menus,id',
+                'items.*.quantity' => 'required|integer|min:1',
+                'items.*.notes' => 'nullable|string|max:255',
+                'payment_method' => 'required|in:cash,card,qris',
+                'amount_paid' => 'nullable|numeric|min:0'
             ]);
 
-            // Update stok menu
-            $menu->decrement('stock', $item['quantity']);
-        }
+            // Buat nomor pesanan unik
+            $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(\Str::random(6));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Pesanan berhasil dibuat',
-            'order_number' => $orderNumber,
-            'order_id' => $order->id,
-            'total_amount' => $totalAmount,
-            'qris_url' => $qrisUrl,
-            'payment_method' => $request->payment_method
-        ]);
+            // Hitung total dan siapkan item details untuk Midtrans
+            $totalAmount = 0;
+            $midtransItems = [];
+            
+            foreach ($request->items as $item) {
+                $menu = Menu::findOrFail($item['menu_id']);
+                $totalAmount += $menu->price * $item['quantity'];
+                
+                $midtransItems[] = [
+                    'id' => $menu->id,
+                    'price' => $menu->price,
+                    'quantity' => $item['quantity'],
+                    'name' => substr($menu->name, 0, 50)
+                ];
+            }
+
+            // Siapkan data pembayaran
+            $amountPaid = $request->amount_paid;
+            $changeAmount = 0;
+            $paymentStatus = 'pending';
+            $paidAt = null;
+            $qrisUrl = null;
+
+            // Logika Pembayaran
+            if ($request->payment_method === 'qris') {
+                // Integrasi Midtrans QRIS
+                try {
+                    $this->configureMidtrans();
+                    
+                    // DEBUG: Log server key (partial)
+                    $serverKey = config('services.midtrans.server_key');
+                    \Log::info('Midtrans Config Check', [
+                        'server_key_exists' => !empty($serverKey),
+                        'server_key_prefix' => substr($serverKey, 0, 5) . '...',
+                        'is_production' => config('services.midtrans.is_production')
+                    ]);
+
+                    $params = [
+                        'payment_type' => 'qris',
+                        'transaction_details' => [
+                            'order_id' => $orderNumber,
+                            'gross_amount' => $totalAmount,
+                        ],
+                        'item_details' => $midtransItems,
+                        'customer_details' => [
+                            'first_name' => $request->customer_name,
+                            'phone' => $request->customer_phone ?? '',
+                        ],
+                        'custom_expiry' => [
+                            'expiry_duration' => 15,
+                            'unit' => 'minute',
+                        ]
+                    ];
+                    
+                    $response = \Midtrans\CoreApi::charge($params);
+                    
+                    // Ambil URL QR Code
+                    if (isset($response->actions)) {
+                        foreach ($response->actions as $action) {
+                            if ($action->name === 'generate-qr-code') {
+                                $qrisUrl = $action->url;
+                                break;
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Midtrans Error: ' . $e->getMessage());
+                    // Jika gagal generate QR, kembalikan error
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'Gagal memproses QRIS: ' . $e->getMessage()
+                    ], 500);
+                }
+            } else {
+                // Pembayaran Tunai
+                if ($amountPaid !== null) {
+                    if ($amountPaid >= $totalAmount) {
+                        $paymentStatus = 'paid';
+                        $changeAmount = $amountPaid - $totalAmount;
+                        $paidAt = now();
+                    }
+                } else if ($request->payment_method === 'cash') {
+                    // Jika metode pembayaran tunai dan amount_paid tidak dispesifikasikan,
+                    // asumsikan pembayaran pas atau akan dihitung nanti
+                    $paymentStatus = 'paid';
+                }
+            }
+
+            // Buat pesanan
+            $order = Order::create([
+                'order_number' => $orderNumber,
+                'user_id' => null, // POS order tidak terhubung ke user
+                'status' => 'confirmed', // Langsung confirmed karena dibuat admin
+                'subtotal' => $totalAmount,
+                'total_amount' => $totalAmount,
+                'customer_name' => $request->customer_name,
+                'customer_phone' => $request->customer_phone ?? '-',
+                'table_number' => $request->table_number,
+                'order_type' => $request->order_type,
+                'special_requests' => $request->special_requests,
+                'payment_status' => $paymentStatus,
+                'payment_method' => $request->payment_method,
+                'amount_paid' => $amountPaid,
+                'change_amount' => $changeAmount,
+                'paid_at' => $paidAt
+            ]);
+
+            // Buat item pesanan
+            foreach ($request->items as $item) {
+                $menu = Menu::findOrFail($item['menu_id']);
+
+                \App\Models\OrderItem::create([
+                    'order_id' => $order->id,
+                    'menu_id' => $item['menu_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $menu->price,
+                    'special_instructions' => $item['notes'] ?? null
+                ]);
+
+                // Update stok menu
+                $menu->decrement('stock', $item['quantity']);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pesanan berhasil dibuat',
+                'order_number' => $orderNumber,
+                'order_id' => $order->id,
+                'total_amount' => $totalAmount,
+                'qris_url' => $qrisUrl,
+                'payment_method' => $request->payment_method
+            ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal: ' . implode(', ', $e->validator->errors()->all())
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('POS Order Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
     
     // ========== QR CODE MANAGEMENT ==========
@@ -555,14 +614,19 @@ class AdminController extends Controller
     {
         $customer = User::where('role', 'customer')->findOrFail($id);
         
-        // Cek apakah ada pesanan
+        // Nullify orders - convert to guest orders (preserve order history)
         if ($customer->orders()->count() > 0) {
-            return redirect()->back()->with('error', 'Tidak dapat menghapus pelanggan yang memiliki riwayat pesanan');
+            $customer->orders()->update(['user_id' => null]);
+            \Log::info("Customer deleted with orders converted to guest", [
+                'customer_id' => $id,
+                'customer_name' => $customer->name,
+                'orders_count' => $customer->orders()->count()
+            ]);
         }
         
         $customer->delete();
         
-        return redirect()->route('admin.customers')->with('success', 'Pelanggan berhasil dihapus');
+        return redirect()->route('admin.customers')->with('success', 'Pelanggan berhasil dihapus. Riwayat pesanan disimpan sebagai pesanan guest.');
     }
 
     // Cek status pesanan (untuk polling QRIS)

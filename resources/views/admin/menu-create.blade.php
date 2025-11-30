@@ -1,12 +1,31 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container py-4">
+    <style>
+        .form-control:focus, .form-select:focus {
+            border-color: #4A7F5A;
+            box-shadow: 0 0 0 0.2rem rgba(74, 127, 90, 0.25);
+        }
+        .form-check-input:checked {
+            background-color: #2A5C3F;
+            border-color: #2A5C3F;
+        }
+        /* Custom file input styling if needed, but default bootstrap with color tweaks is fine */
+        input[type="file"]::file-selector-button {
+            background-color: #4A7F5A;
+            color: white;
+            border: none;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background-color: #3d6b4a;
+        }
+    </style>
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">
-                    <h4>Tambah Menu Baru</h4>
+                <div class="card-header text-white" style="background-color: #2A5C3F;">
+                    <h4 class="mb-0">Tambah Menu Baru</h4>
                 </div>
                 
                 <div class="card-body">
@@ -63,20 +82,32 @@
                         <div class="mb-3">
                             <label for="image" class="form-label">Gambar</label>
                             <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
-                            <small class="form-text text-muted">Format: jpeg, png, jpg, gif. Maksimal: 2MB</small>
+                            <small class="form-text" style="color: #1E3B2C;">Format: jpeg, png, jpg, gif. Maksimal: 2MB</small>
                             @error('image')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="is_available" name="is_available" value="1" {{ old('is_available') ? 'checked' : '' }}>
-                            <label class="form-check-label" for="is_available">Tersedia</label>
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_available" name="is_available" value="1" {{ old('is_available', true) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_available"><strong>Tersedia</strong></label>
+                            </div>
                         </div>
                         
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ route('admin.menu') }}" class="btn btn-outline-danger me-md-2">Batal</a>
-                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn text-white" 
+                                    style="background-color: #2A5C3F; transition: all 0.3s;"
+                                    onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+                                    onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
+                                <i class="bi bi-save"></i> Simpan
+                            </button>
+                            <a href="{{ route('admin.menu') }}" class="btn" 
+                               style="background-color: #ffffff; color: #2A5C3F; border: 1px solid #2A5C3F; transition: all 0.3s;"
+                               onmouseover="this.style.backgroundColor='#f8f9fa'; this.style.transform='translateY(-2px)';" 
+                               onmouseout="this.style.backgroundColor='#ffffff'; this.style.transform='translateY(0)';">
+                                <i class="bi bi-x-circle"></i> Batal
+                            </a>
                         </div>
                     </form>
                 </div>

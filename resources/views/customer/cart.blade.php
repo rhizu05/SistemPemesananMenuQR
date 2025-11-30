@@ -4,22 +4,42 @@
 
 @section('content')
 <div class="container">
+    <style>
+        .form-control:focus, .form-select:focus {
+            border-color: #4A7F5A;
+            box-shadow: 0 0 0 0.2rem rgba(74, 127, 90, 0.25);
+        }
+    </style>
     <div class="page-header">
         <h2><i class="bi bi-cart3"></i> Keranjang Belanja</h2>
         <p>Review pesanan Anda sebelum checkout</p>
     </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
     @if(count($cart) > 0)
         <div class="row g-4">
             <!-- Cart Items -->
             <div class="col-lg-8">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header text-white" style="background-color: #2A5C3F;">
                         <i class="bi bi-list-ul"></i> Item Pesanan ({{ count($cart) }} item)
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
+                            <table class="table align-middle mb-0">
                                 <thead>
                                     <tr>
                                         <th width="15%">Gambar</th>
@@ -30,9 +50,8 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @php $total = 0; @endphp
                                     @foreach($cart as $menuId => $item)
-                                        @php $subtotal = $item['price'] * $item['quantity']; $total += $subtotal; @endphp
+                                        @php $subtotal = $item['price'] * $item['quantity']; @endphp
                                         <tr data-menu-id="{{ $menuId }}">
                                             <td>
                                                 @if($item['image'])
@@ -50,26 +69,30 @@
                                             <td>
                                                 <strong>{{ $item['name'] }}</strong>
                                                 <br>
-                                                <small class="text-dark fw-bold">Rp {{ number_format($subtotal, 0, ',', '.') }}</small>
+                                                <small class="fw-bold item-subtotal" style="color: #2A5C3F;">Rp {{ number_format($subtotal, 0, ',', '.') }}</small>
                                             </td>
                                             <td>Rp {{ number_format($item['price'], 0, ',', '.') }}</td>
                                             <td>
                                                 <div class="input-group input-group-sm" style="width: 110px;">
-                                                    <button class="btn btn-outline-secondary btn-decrease" type="button">
+                                                    <button class="btn btn-outline-secondary btn-decrease" type="button" style="border-color: #4A7F5A; color: #4A7F5A;">
                                                         <i class="bi bi-dash"></i>
                                                     </button>
                                                     <input type="number" 
                                                            class="form-control text-center quantity-input" 
                                                            value="{{ $item['quantity'] }}" 
                                                            min="1" 
-                                                           readonly>
-                                                    <button class="btn btn-outline-secondary btn-increase" type="button">
+                                                           readonly
+                                                           style="border-color: #4A7F5A;">
+                                                    <button class="btn btn-outline-secondary btn-increase" type="button" style="border-color: #4A7F5A; color: #4A7F5A;">
                                                         <i class="bi bi-plus"></i>
                                                     </button>
                                                 </div>
                                             </td>
                                             <td>
-                                                <button class="btn btn-sm btn-danger btn-remove" type="button">
+                                                <button class="btn btn-sm btn-remove text-white" type="button" 
+                                                        style="background-color: #D32F2F; transition: all 0.3s;"
+                                                        onmouseover="this.style.backgroundColor='#B71C1C'; this.style.transform='translateY(-2px)';" 
+                                                        onmouseout="this.style.backgroundColor='#D32F2F'; this.style.transform='translateY(0)';">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </td>
@@ -82,10 +105,16 @@
                 </div>
 
                 <div class="mt-3 d-flex gap-2">
-                    <a href="{{ route('customer.menu') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('customer.menu') }}" class="btn text-white" 
+                       style="background-color: #2A5C3F; transition: all 0.3s;"
+                       onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+                       onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
                         <i class="bi bi-arrow-left"></i> Lanjut Belanja
                     </a>
-                    <button type="button" class="btn btn-danger" id="clearCartBtn">
+                    <button type="button" class="btn text-white" id="clearCartBtn" 
+                            style="background-color: #D32F2F; transition: all 0.3s;"
+                            onmouseover="this.style.backgroundColor='#B71C1C'; this.style.transform='translateY(-2px)';" 
+                            onmouseout="this.style.backgroundColor='#D32F2F'; this.style.transform='translateY(0)';">
                         <i class="bi bi-trash"></i> Kosongkan
                     </button>
                 </div>
@@ -93,25 +122,86 @@
 
             <!-- Order Summary -->
             <div class="col-lg-4">
-                <div class="card sticky-top" style="top: 20px;">
-                    <div class="card-header bg-success">
+                <div class="card sticky-top" style="top: 80px; z-index: 100;">
+                    <div class="card-header text-white" style="background-color: #2A5C3F;">
                         <i class="bi bi-receipt"></i> Ringkasan Pesanan
                     </div>
                     <div class="card-body">
+                        <!-- Voucher Section -->
+                        @auth
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-gift"></i> Punya Kode Voucher?
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="voucherCode" 
+                                           placeholder="KODE VOUCHER"
+                                           style="text-transform: uppercase;"
+                                           value="{{ session('applied_voucher_code') ?? '' }}">
+                                    <button class="btn btn-success" type="button" id="applyVoucher">
+                                        <i class="bi bi-check-circle"></i> Gunakan
+                                    </button>
+                                </div>
+                                <small class="text-muted">
+                                    <a href="{{ route('customer.vouchers') }}" target="_blank">
+                                        <i class="bi bi-ticket-perforated"></i> Lihat voucher tersedia
+                                    </a>
+                                </small>
+                                
+                                <!-- Voucher Message -->
+                                <div id="voucherMessage" class="mt-2"></div>
+                                
+                                <!-- Applied Voucher Display -->
+                                @if(session('applied_voucher'))
+                                    <div id="voucherApplied" class="alert alert-success alert-sm mt-2 p-2">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <small class="fw-bold">{{ session('applied_voucher')['name'] }}</small>
+                                                <br><small class="text-success">Diskon: Rp {{ number_format(session('applied_voucher')['discount'], 0, ',', '.') }}</small>
+                                            </div>
+                                            <a href="{{ route('customer.cart') }}?remove_voucher=1" class="btn-close btn-sm"></a>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @else
+                            <div class="mb-3">
+                                <div class="alert" style="background-color: #E3F2FD; color: #1976D2; border-color: #BBDEFB;">
+                                    <i class="bi bi-info-circle"></i> 
+                                    <strong>Mau pakai voucher?</strong>
+                                    <br><small>Silakan <a href="{{ route('login') }}" class="alert-link" style="color: #1565C0;">login</a> terlebih dahulu untuk menggunakan voucher diskon.</small>
+                                </div>
+                            </div>
+                        @endauth
+
+                        <hr>
+
+                        <!-- Price Summary -->
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal:</span>
                             <strong id="cartSubtotal">Rp {{ number_format($total, 0, ',', '.') }}</strong>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Pajak (10%):</span>
-                            <strong id="cartTax">Rp {{ number_format($total * 0.1, 0, ',', '.') }}</strong>
+                        
+                        <div id="cartDiscountRow" class="d-flex justify-content-between mb-2 text-success" style="{{ session('applied_voucher') ? '' : 'display: none !important;' }}">
+                            <span><i class="bi bi-gift"></i> Diskon Voucher:</span>
+                            <strong id="cartDiscountAmount">- Rp {{ number_format(session('applied_voucher')['discount'] ?? 0, 0, ',', '.') }}</strong>
                         </div>
+                        @php
+                            $discount = session('applied_voucher')['discount'] ?? 0;
+                            $afterDiscount = $total - $discount;
+                        @endphp
+                        
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total:</strong>
-                            <h4 class="text-dark mb-0" id="cartTotal">Rp {{ number_format($total * 1.1, 0, ',', '.') }}</h4>
+                            <h4 class="mb-0 fw-bold" id="cartTotal" style="color: #2A5C3F;">Rp {{ number_format($afterDiscount, 0, ',', '.') }}</h4>
                         </div>
-                        <button type="button" class="btn btn-success w-100 btn-lg" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+                        <button type="button" class="btn text-white w-100 btn-lg" data-bs-toggle="modal" data-bs-target="#checkoutModal"
+                                style="background-color: #2A5C3F; transition: all 0.3s;"
+                                onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+                                onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
                             <i class="bi bi-check-circle"></i> Checkout
                         </button>
                     </div>
@@ -124,7 +214,10 @@
                 <i class="bi bi-cart-x" style="font-size: 5rem; color: #ccc;"></i>
                 <h4 class="mt-3">Keranjang Kosong</h4>
                 <p class="text-muted">Belum ada menu yang ditambahkan ke keranjang</p>
-                <a href="{{ route('customer.menu') }}" class="btn btn-primary mt-3">
+                <a href="{{ route('customer.menu') }}" class="btn text-white mt-3"
+                   style="background-color: #2A5C3F; transition: all 0.3s;"
+                   onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+                   onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
                     <i class="bi bi-card-list"></i> Lihat Menu
                 </a>
             </div>
@@ -137,14 +230,14 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-check-circle"></i> Konfirmasi Pesanan</h5>
+                <h5 class="modal-title" style="color: #2A5C3F;"><i class="bi bi-check-circle"></i> Konfirmasi Pesanan</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="checkoutForm">
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <h6 class="fw-bold mb-3"><i class="bi bi-person"></i> Informasi Pelanggan</h6>
+                            <h6 class="fw-bold mb-3"><i class="bi bi-person" style="color: #4A7F5A;"></i> Informasi Pelanggan</h6>
                             <div class="mb-3">
                                 <label for="customer_name" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
                                 <input type="text" 
@@ -177,7 +270,7 @@
                                            name="table_number" 
                                            value="{{ $tableNumber }}" 
                                            readonly
-                                           style="background-color: #e9ecef;">
+                                           style="background-color: #F3F7F4; border-color: #ced4da;">
                                     <small class="text-muted">Nomor meja dari QR Code scan</small>
                                 @else
                                     <input type="text" 
@@ -189,7 +282,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <h6 class="fw-bold mb-3"><i class="bi bi-bag"></i> Detail Pesanan</h6>
+                            <h6 class="fw-bold mb-3"><i class="bi bi-bag" style="color: #4A7F5A;"></i> Detail Pesanan</h6>
                             
                             <!-- Hidden input untuk order type (selalu dine_in) -->
                             <input type="hidden" name="order_type" value="dine_in">
@@ -210,8 +303,16 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success btn-lg">
+                    <button type="button" class="btn" data-bs-dismiss="modal"
+                            style="background-color: #ffffff; color: #4A7F5A; border: 1px solid #4A7F5A; transition: all 0.3s;"
+                            onmouseover="this.style.backgroundColor='#f8f9fa'; this.style.transform='translateY(-2px)';" 
+                            onmouseout="this.style.backgroundColor='#ffffff'; this.style.transform='translateY(0)';">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn text-white btn-lg"
+                            style="background-color: #2A5C3F; transition: all 0.3s;"
+                            onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+                            onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
                         <i class="bi bi-check-circle"></i> Konfirmasi Pesanan
                     </button>
                 </div>
@@ -236,6 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 quantity--;
             }
             
+            input.value = quantity;
             updateCartQuantity(menuId, quantity);
         });
     });
@@ -314,10 +416,47 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                // Update item subtotal
+                const row = document.querySelector(`tr[data-menu-id="${menuId}"]`);
+                if (row) {
+                    const subtotalEl = row.querySelector('.item-subtotal');
+                    if (subtotalEl) {
+                        subtotalEl.textContent = formatCurrency(data.item_subtotal);
+                    }
+                }
+
+                // Update cart subtotal
+                const cartSubtotalEl = document.getElementById('cartSubtotal');
+                if (cartSubtotalEl) {
+                    cartSubtotalEl.textContent = formatCurrency(data.cart_subtotal);
+                }
+
+                // Update discount
+                const discountRow = document.getElementById('cartDiscountRow');
+                const discountAmountEl = document.getElementById('cartDiscountAmount');
+                
+                if (data.discount_amount > 0) {
+                    if (discountRow) discountRow.style.setProperty('display', 'flex', 'important');
+                    if (discountAmountEl) discountAmountEl.textContent = '- ' + formatCurrency(data.discount_amount);
+                } else {
+                    if (discountRow) discountRow.style.setProperty('display', 'none', 'important');
+                }
+
+                // Update cart total
+                const cartTotalEl = document.getElementById('cartTotal');
+                if (cartTotalEl) {
+                    cartTotalEl.textContent = formatCurrency(data.cart_total);
+                }
+                
+                // Update header badge if exists (optional, if header is dynamic)
+                // location.reload() was doing this, but now we are SPA-ish here.
             }
         })
         .catch(error => console.error('Error:', error));
+    }
+
+    function formatCurrency(amount) {
+        return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
     }
     
     function removeFromCart(menuId) {
@@ -350,6 +489,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => console.error('Error:', error));
+    }
+    
+    // Voucher Application
+    const applyVoucherBtn = document.getElementById('applyVoucher');
+    if (applyVoucherBtn) {
+        applyVoucherBtn.addEventListener('click', function() {
+            const code = document.getElementById('voucherCode').value.trim().toUpperCase();
+            const subtotal = {{ $total ?? 0 }};
+            const messageDiv = document.getElementById('voucherMessage');
+            
+            if (!code) {
+                messageDiv.innerHTML = '<small class="text-danger">Masukkan kode voucher</small>';
+                return;
+            }
+            
+            // Show loading
+            applyVoucherBtn.disabled = true;
+            applyVoucherBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Validasi...';
+            
+            // Redirect to cart with voucher parameter
+            window.location.href = '{{ route("customer.cart") }}?apply_voucher=' + code;
+        });
     }
 });
 </script>

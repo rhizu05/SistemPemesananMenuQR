@@ -2,11 +2,21 @@
 
 @section('content')
 <div class="container py-4">
+    <style>
+        .form-control:focus {
+            border-color: #4A7F5A;
+            box-shadow: 0 0 0 0.2rem rgba(74, 127, 90, 0.25);
+        }
+        .form-check-input:checked {
+            background-color: #2A5C3F;
+            border-color: #2A5C3F;
+        }
+    </style>
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">➕ Tambah Kategori Baru</h4>
+                <div class="card-header text-white" style="background-color: #2A5C3F;">
+                    <h4 class="mb-0">Tambah Kategori Baru</h4>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('admin.categories.store') }}" method="POST">
@@ -66,10 +76,16 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn text-white" 
+                                    style="background-color: #2A5C3F; transition: all 0.3s;"
+                                    onmouseover="this.style.backgroundColor='#1E3B2C'; this.style.transform='translateY(-2px)';" 
+                                    onmouseout="this.style.backgroundColor='#2A5C3F'; this.style.transform='translateY(0)';">
                                 <i class="bi bi-save"></i> Simpan Kategori
                             </button>
-                            <a href="{{ route('admin.categories') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.categories') }}" class="btn" 
+                               style="background-color: #ffffff; color: #4A7F5A; border: 1px solid #4A7F5A; transition: all 0.3s;"
+                               onmouseover="this.style.backgroundColor='#f8f9fa'; this.style.transform='translateY(-2px)';" 
+                               onmouseout="this.style.backgroundColor='#ffffff'; this.style.transform='translateY(0)';">
                                 <i class="bi bi-x-circle"></i> Batal
                             </a>
                         </div>
@@ -79,8 +95,10 @@
 
             <div class="card shadow-sm mt-3">
                 <div class="card-body">
-                    <h6 class="card-title">💡 Tips:</h6>
-                    <ul class="mb-0 small text-muted">
+                    <h6 class="card-title" style="color: #1E3B2C;">
+                        <i class="bi bi-lightbulb-fill me-2" style="color: #1976D2;"></i> Tips:
+                    </h6>
+                    <ul class="mb-0 small" style="color: #1E3B2C;">
                         <li>Buat kategori yang jelas dan mudah dipahami customer</li>
                         <li>Gunakan nama kategori yang umum seperti "Makanan Utama", "Minuman", "Dessert", dll</li>
                         <li>Kategori yang nonaktif tidak akan ditampilkan di menu customer</li>
