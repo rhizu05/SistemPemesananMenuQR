@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Login Admin/Kasir')
+@section('title', 'Login Admin/Kasir/Koki')
 
 @section('content')
 <div class="container">
@@ -18,7 +18,7 @@
         <div class="col-md-5">
             <div class="card shadow-lg">
                 <div class="card-header text-white text-center py-4" style="background-color: #2A5C3F;">
-                    <h3 class="mb-0"><i class="bi bi-shield-lock"></i> Login Admin/Kasir</h3>
+                    <h3 class="mb-0"><i class="bi bi-shield-lock"></i> Login Admin/Kasir/Koki</h3>
                     <p class="mb-0 small mt-2">Khusus untuk Admin dan Staf Dapur</p>
                 </div>
                 <div class="card-body p-4">

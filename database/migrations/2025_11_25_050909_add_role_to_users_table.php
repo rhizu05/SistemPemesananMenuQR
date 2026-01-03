@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'kitchen', 'customer'])->default('customer');
+            // Use string instead of enum for better SQLite compatibility
+            $table->string('role')->default('customer');
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
         });

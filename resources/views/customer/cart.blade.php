@@ -43,10 +43,11 @@
                                 <thead>
                                     <tr>
                                         <th width="15%">Gambar</th>
-                                        <th width="30%">Menu</th>
-                                        <th width="20%">Harga</th>
-                                        <th width="20%">Jumlah</th>
-                                        <th width="15%">Aksi</th>
+                                        <th width="25%">Menu</th>
+                                        <th width="15%">Harga</th>
+                                        <th width="15%">Jumlah</th>
+                                        <th width="20%">Catatan</th>
+                                        <th width="10%">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -89,9 +90,16 @@
                                                 </div>
                                             </td>
                                             <td>
+                                                <textarea class="form-control form-control-sm item-notes" 
+                                                          rows="2" 
+                                                          placeholder="Catatan khusus..."
+                                                          data-menu-id="{{ $menuId }}"
+                                                          style="font-size: 0.85rem; resize: none;">{{ $item['notes'] ?? '' }}</textarea>
+                                            </td>
+                                            <td>
                                                 <button class="btn btn-sm btn-remove text-white" type="button" 
                                                         style="background-color: #D32F2F; transition: all 0.3s;"
-                                                        onmouseover="this.style.backgroundColor='#B71C1C'; this.style.transform='translateY(-2px)';" 
+                                                        onmouseover="this.style.backgroundColor='#B71C1C'; this.style.transform='translateY(-2px)';'" 
                                                         onmouseout="this.style.backgroundColor='#D32F2F'; this.style.transform='translateY(0)';">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -247,17 +255,6 @@
                                        value="{{ auth()->check() ? auth()->user()->name : '' }}"
                                        required>
                             </div>
-                            @if(auth()->check())
-                            <div class="mb-3">
-                                <label for="customer_phone" class="form-label">No. Telepon <span class="text-danger">*</span></label>
-                                <input type="tel" 
-                                       class="form-control" 
-                                       id="customer_phone" 
-                                       name="customer_phone" 
-                                       value="{{ auth()->user()->phone }}"
-                                       required>
-                            </div>
-                            @endif
                             <div class="mb-3">
                                 <label for="table_number" class="form-label">No. Meja</label>
                                 @php
@@ -293,11 +290,6 @@
                                     <option value="cash" selected>Tunai</option>
                                     <option value="qris">QRIS</option>
                                 </select>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="special_requests" class="form-label">Catatan Pesanan</label>
-                                <textarea class="form-control" id="special_requests" name="special_requests" rows="3" placeholder="Catatan umum untuk seluruh pesanan"></textarea>
                             </div>
                         </div>
                     </div>
@@ -352,6 +344,41 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Handle item notes with debounce
+    let notesTimeout;
+    document.querySelectorAll('.item-notes').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            const menuId = this.dataset.menuId;
+            const notes = this.value;
+            
+            // Clear previous timeout
+            clearTimeout(notesTimeout);
+            
+            // Set new timeout (wait 500ms after user stops typing)
+            notesTimeout = setTimeout(() => {
+                updateItemNotes(menuId, notes);
+            }, 500);
+        });
+    });
+    
+    function updateItemNotes(menuId, notes) {
+        fetch('{{ route("customer.cart.update-notes") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ menu_id: menuId, notes: notes })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Notes updated for menu', menuId);
+            }
+        })
+        .catch(error => console.error('Error updating notes:', error));
+    }
     
     // Clear cart
     document.getElementById('clearCartBtn')?.addEventListener('click', function() {
@@ -450,9 +477,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Update header badge if exists (optional, if header is dynamic)
                 // location.reload() was doing this, but now we are SPA-ish here.
+            } else {
+                // Handle Error (e.g. Stock Insufficient)
+                alert('⚠️ ' + (data.message || 'Gagal mengupdate keranjang'));
+                
+                // Reset input to previous valid value or max stock if provided
+                const row = document.querySelector(`tr[data-menu-id="${menuId}"]`);
+                if (row) {
+                    const input = row.querySelector('.quantity-input');
+                    // data.current_qty sent from backend if available
+                    if (data.current_qty !== undefined) {
+                        input.value = data.current_qty;
+                    } else {
+                        // Fallback: reload to sync with server state
+                        location.reload(); 
+                    }
+                }
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Tidak dapat terhubung ke server');
+        });
     }
 
     function formatCurrency(amount) {

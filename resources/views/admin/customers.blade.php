@@ -66,13 +66,12 @@
                         <thead class="table-light">
                             <tr>
                                 <th width="5%">#</th>
-                                <th width="20%">Nama</th>
+                                <th width="25%">Nama</th>
                                 <th width="15%">No. HP</th>
-                                <th width="15%">Email</th>
-                                <th width="10%" class="text-center">Total Pesanan</th>
-                                <th width="12%">Terdaftar</th>
-                                <th width="10%" class="text-center">Status</th>
-                                <th width="13%" class="text-center">Aksi</th>
+                                <th width="12%" class="text-center">Total Pesanan</th>
+                                <th width="15%">Terdaftar</th>
+                                <th width="13%" class="text-center">Status</th>
+                                <th width="15%" class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -86,9 +85,6 @@
                                         @endif
                                     </td>
                                     <td>{{ $customer->phone }}</td>
-                                    <td>
-                                        <small class="text-muted">{{ $customer->email ?? '-' }}</small>
-                                    </td>
                                     <td class="text-center">
                                         @if($customer->orders_count > 0)
                                             <span class="badge text-white" style="background-color: #8FC69A;">{{ $customer->orders_count }} pesanan</span>

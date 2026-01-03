@@ -53,18 +53,6 @@
                             <small class="text-muted">Nomor telepon tidak dapat diubah</small>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Alamat</label>
-                            <textarea class="form-control @error('address') is-invalid @enderror" 
-                                      id="address" 
-                                      name="address" 
-                                      rows="3" 
-                                      placeholder="Alamat lengkap Anda">{{ old('address', $user->address) }}</textarea>
-                            @error('address')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn text-white"
                                     style="background-color: #2A5C3F; transition: all 0.3s;"

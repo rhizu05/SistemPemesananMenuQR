@@ -87,7 +87,7 @@
                                     </td>
                                     <td>
                                         @if($usage->order)
-                                            <a href="{{ route('admin.order.detail', $usage->order->id) }}" class="text-decoration-none" style="color: #1976D2;">
+                                            <a href="{{ route('admin.order.receipt', $usage->order->id) }}" class="text-decoration-none" style="color: #1976D2;" target="_blank">
                                                 {{ $usage->order->order_number }}
                                             </a>
                                         @else

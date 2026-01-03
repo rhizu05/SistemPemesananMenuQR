@@ -365,7 +365,7 @@ class AdminController extends Controller
             ->with('category')
             ->get();
         
-        return view('admin.pos', compact('categories', 'menus'));
+        return view('cashier.pos', compact('categories', 'menus'));
     }
     
     // Konfigurasi Midtrans
@@ -490,7 +490,7 @@ class AdminController extends Controller
             $order = Order::create([
                 'order_number' => $orderNumber,
                 'user_id' => null, // POS order tidak terhubung ke user
-                'status' => 'confirmed', // Langsung confirmed karena dibuat admin
+                'status' => ($paymentStatus === 'paid') ? 'preparing' : 'confirmed', // Jika sudah bayar (tunai), langsung masuk dapur (preparing)
                 'subtotal' => $totalAmount,
                 'total_amount' => $totalAmount,
                 'customer_name' => $request->customer_name,

@@ -90,10 +90,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user has cashier role
+     */
+    public function isCashier()
+    {
+        return $this->role === 'cashier';
+    }
+
+    /**
      * Check if user has specific role
      */
     public function hasRole($role)
     {
+        // Admin has access to everything except if specifically checked
+        if ($this->role === 'admin') {
+            return true;
+        }
         return $this->role === $role;
     }
 }

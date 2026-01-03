@@ -9,40 +9,32 @@ class KitchenController extends Controller
 {
     public function dashboard()
     {
-        // Get orders by status
-        // Confirmed: pesanan yang dikonfirmasi dan sudah dibayar tapi belum diproses
-        $confirmedOrders = Order::where('status', 'confirmed')
-            ->where('payment_status', 'paid')
-            ->orderBy('created_at', 'asc')
-            ->get();
-            
         // Preparing: pesanan yang sedang diproses dapur
-        // Include juga pesanan QRIS yang sudah paid tapi masih status pending
+        // Include semua pesanan yang sudah dibayar (paid) dengan status preparing atau pending+paid
         $preparingOrders = Order::where(function($query) {
                 $query->where('status', 'preparing')
                       ->orWhere(function($q) {
                           $q->where('status', 'pending')
-                            ->where('payment_status', 'paid')
-                            ->where('payment_method', 'qris');
+                            ->where('payment_status', 'paid');
                       });
             })
+            ->with(['orderItems.menu'])
             ->orderBy('created_at', 'asc')
             ->get();
             
         // Ready: pesanan yang sudah siap disajikan
         $readyOrders = Order::where('status', 'ready')
+            ->with(['orderItems.menu'])
             ->orderBy('created_at', 'asc')
             ->get();
 
         // Log untuk debugging
         \Log::info('Kitchen Dashboard', [
-            'confirmed_count' => $confirmedOrders->count(),
             'preparing_count' => $preparingOrders->count(),
-            'ready_count' => $readyOrders->count(),
-            'preparing_orders' => $preparingOrders->pluck('order_number', 'status', 'payment_method', 'payment_status')
+            'ready_count' => $readyOrders->count()
         ]);
 
-        return view('kitchen.dashboard', compact('confirmedOrders', 'preparingOrders', 'readyOrders'));
+        return view('kitchen.dashboard', compact('preparingOrders', 'readyOrders'));
     }
 
     public function updateStatus(Request $request, $id)
@@ -89,5 +81,28 @@ class KitchenController extends Controller
                 'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
+    }
+    
+    /**
+     * Get orders count for real-time updates (AJAX)
+     */
+    public function getOrdersCount()
+    {
+        $preparingCount = Order::where(function($query) {
+                $query->where('status', 'preparing')
+                      ->orWhere(function($q) {
+                          $q->where('status', 'pending')
+                            ->where('payment_status', 'paid');
+                      });
+            })
+            ->count();
+            
+        $readyCount = Order::where('status', 'ready')->count();
+        
+        return response()->json([
+            'preparing' => $preparingCount,
+            'ready' => $readyCount,
+            'total' => $preparingCount + $readyCount
+        ]);
     }
 }

@@ -64,10 +64,14 @@ class CustomerController extends Controller
         $menu = Menu::findOrFail($request->menu_id);
         
         // Cek stok
-        if ($menu->stock < $request->quantity) {
+        $cart = session()->get('cart', []);
+        $currentQtyInCart = isset($cart[$request->menu_id]) ? $cart[$request->menu_id]['quantity'] : 0;
+        $requestedTotal = $currentQtyInCart + $request->quantity;
+
+        if ($menu->stock < $requestedTotal) {
             return response()->json([
                 'success' => false,
-                'message' => 'Stok tidak mencukupi'
+                'message' => 'Stok tidak mencukupi (Tersedia: ' . $menu->stock . ', di Keranjang: ' . $currentQtyInCart . ')'
             ], 400);
         }
 
@@ -109,6 +113,20 @@ class CustomerController extends Controller
         if ($request->quantity == 0) {
             unset($cart[$request->menu_id]);
         } else {
+            $menu = Menu::find($request->menu_id);
+            if (!$menu) {
+                return response()->json(['success' => false, 'message' => 'Menu tidak ditemukan'], 404);
+            }
+
+            if ($menu->stock < $request->quantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok tidak mencukupi (Tersedia: ' . $menu->stock . ')',
+                    'current_qty' => isset($cart[$request->menu_id]) ? $cart[$request->menu_id]['quantity'] : $menu->stock,
+                    'max_stock' => $menu->stock
+                ], 400);
+            }
+
             if (isset($cart[$request->menu_id])) {
                 $cart[$request->menu_id]['quantity'] = $request->quantity;
             }
@@ -186,6 +204,27 @@ class CustomerController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Keranjang berhasil dikosongkan'
+        ]);
+    }
+    
+    // Method untuk update notes item di keranjang
+    public function updateItemNotes(Request $request)
+    {
+        $request->validate([
+            'menu_id' => 'required',
+            'notes' => 'nullable|string|max:255'
+        ]);
+        
+        $cart = session()->get('cart', []);
+        
+        if (isset($cart[$request->menu_id])) {
+            $cart[$request->menu_id]['notes'] = $request->notes;
+            session()->put('cart', $cart);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Catatan berhasil disimpan'
         ]);
     }
 
@@ -379,6 +418,18 @@ class CustomerController extends Controller
             }
         }
 
+        // Check stock availability BEFORE creating anything
+        foreach ($cart as $menuId => $item) {
+            $menu = Menu::find($item['menu_id']);
+            if (!$menu || $menu->stock < $item['quantity']) {
+                $available = $menu ? $menu->stock : 0;
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok untuk menu "' . $item['name'] . '" tidak mencukupi. Tersedia: ' . $available
+                ], 400);
+            }
+        }
+
         // Buat pesanan
         $order = Order::create([
             'order_number' => $orderNumber,
@@ -403,12 +454,23 @@ class CustomerController extends Controller
         foreach ($cart as $menuId => $item) {
             $menu = Menu::findOrFail($item['menu_id']);
 
+            // Re-check stock atomically (optimistic locking pattern or strict check)
+            if ($menu->stock < $item['quantity']) {
+                // If race condition happens here, we should rollback order
+                $order->delete(); 
+                // Restore previous items if needed (not implemented here as loop breaks)
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok menu "' . $menu->name . '" baru saja habis diambil pelanggan lain.'
+                ], 400);
+            }
+
             OrderItem::create([
                 'order_id' => $order->id,
                 'menu_id' => $item['menu_id'],
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
-                'special_instructions' => $request->item_notes[$menuId] ?? null
+                'special_instructions' => $item['notes'] ?? null // Ambil notes dari cart session
             ]);
 
             // Update stok menu

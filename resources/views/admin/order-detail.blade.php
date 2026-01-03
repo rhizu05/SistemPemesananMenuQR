@@ -111,7 +111,12 @@
                             <tbody>
                                 @foreach($order->orderItems as $item)
                                 <tr>
-                                    <td>{{ $item->menu->name }}</td>
+                                    <td>
+                                        {{ $item->menu->name }}
+                                        @if($item->special_instructions)
+                                            <br><small class="text-danger"><i class="bi bi-exclamation-circle"></i> {{ $item->special_instructions }}</small>
+                                        @endif
+                                    </td>
                                     <td>Rp {{ number_format($item->price, 2, ',', '.') }}</td>
                                     <td>{{ $item->quantity }}</td>
                                     <td>Rp {{ number_format($item->price * $item->quantity, 2, ',', '.') }}</td>

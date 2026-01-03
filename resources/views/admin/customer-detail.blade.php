@@ -39,10 +39,6 @@
                             <td>{{ $customer->phone }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Email:</strong></td>
-                            <td>{{ $customer->email ?? '-' }}</td>
-                        </tr>
-                        <tr>
                             <td><strong>Status:</strong></td>
                             <td>
                                 @if($customer->is_active ?? true)
@@ -154,9 +150,10 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('admin.order.detail', $order->id) }}" 
-                                                   class="btn btn-sm btn-info">
-                                                    <i class="bi bi-eye"></i> Detail
+                                                <a href="{{ route('admin.order.receipt', $order->id) }}" 
+                                                   class="btn btn-sm btn-info"
+                                                   target="_blank">
+                                                    <i class="bi bi-receipt"></i> Receipt
                                                 </a>
                                             </td>
                                         </tr>

@@ -5,10 +5,12 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\QRController;
 
 // Routes untuk Admin
 Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard.alias'); // Alias for /admin/dashboard
     
     // Category Routes
     Route::get('/categories', [AdminController::class, 'categories'])->name('admin.categories');
@@ -25,19 +27,14 @@ Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->g
     Route::get('/menu/{id}/edit', [AdminController::class, 'editMenu'])->name('admin.menu.edit');
     Route::put('/menu/{id}', [AdminController::class, 'updateMenu'])->name('admin.menu.update');
     Route::delete('/menu/{id}', [AdminController::class, 'deleteMenu'])->name('admin.menu.delete');
-    Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
-    Route::get('/order/{id}', [AdminController::class, 'orderDetail'])->name('admin.order.detail');
-    Route::put('/order/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.order.update-status');
-    Route::put('/order/{id}/payment', [AdminController::class, 'verifyPayment'])->name('admin.order.verify-payment');
+
+    // Receipt route (used by cashier for printing)
     Route::get('/order/{id}/receipt', [AdminController::class, 'printReceipt'])->name('admin.order.receipt');
-    Route::get('/order/{id}/check-status', [AdminController::class, 'checkStatus'])->name('admin.order.check-status');
-    Route::post('/order/{id}/simulate-pay', [AdminController::class, 'simulatePay'])->name('admin.order.simulate-pay');
 
     Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
     
-    // POS Routes
-    Route::get('/pos', [AdminController::class, 'showPOS'])->name('admin.pos');
-    Route::post('/pos/order', [AdminController::class, 'createPOSOrder'])->name('admin.pos.create-order');
+    // POS Route
+    // Redirect admin only to cashier POS logic if needed, but typically admin uses cashier routes via role permission
     
     // QR Code Routes
     Route::get('/qr-codes', [AdminController::class, 'qrCodeManager'])->name('admin.qr-codes');
@@ -60,10 +57,33 @@ Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->g
     Route::delete('/customers/{id}', [AdminController::class, 'deleteCustomer'])->name('admin.customer.delete');
 });
 
+// Routes untuk Cashier (Cashier only - Admin has their own dashboard)
+Route::prefix('cashier')->middleware(['auth', 'role:cashier', 'prevent_kitchen'])->group(function () {
+    Route::get('/', [App\Http\Controllers\CashierController::class, 'dashboard'])->name('cashier.dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\CashierController::class, 'dashboard'])->name('cashier.dashboard.alias'); // Alias
+    
+    // Orders
+    Route::get('/orders', [App\Http\Controllers\CashierController::class, 'orders'])->name('cashier.orders');
+    
+    // Payments
+    Route::get('/payments', [App\Http\Controllers\CashierController::class, 'pendingPayments'])->name('cashier.payments');
+    Route::post('/payments/{id}/verify', [App\Http\Controllers\CashierController::class, 'verifyPayment'])->name('cashier.payments.verify');
+    
+    // POS (reuse admin POS controller logic but cashier view)
+    Route::get('/pos', [AdminController::class, 'showPOS'])->name('cashier.pos');
+    Route::post('/pos/order', [AdminController::class, 'createPOSOrder'])->name('cashier.pos.create-order');
+    Route::get('/order/{id}/status', [AdminController::class, 'checkStatus'])->name('cashier.order.status');
+    Route::get('/order/{id}/receipt', [AdminController::class, 'printReceipt'])->name('cashier.order.receipt');
+    Route::get('/pending-count', [App\Http\Controllers\CashierController::class, 'getPendingCount'])->name('cashier.pending-count');
+});
+
 // Routes untuk Kitchen
 Route::prefix('kitchen')->middleware(['auth', 'role:kitchen'])->group(function () {
     Route::get('/', [KitchenController::class, 'dashboard'])->name('kitchen.dashboard');
+    Route::get('/dashboard', [KitchenController::class, 'dashboard'])->name('kitchen.dashboard.alias'); // Alias
     Route::put('/orders/{id}/status', [KitchenController::class, 'updateStatus'])->name('kitchen.order.update-status');
+    Route::get('/orders-count', [KitchenController::class, 'getOrdersCount'])->name('kitchen.orders-count');
+    Route::get('/order/{id}/receipt', [AdminController::class, 'printReceipt'])->name('kitchen.order.receipt');
 });
 
 // Routes untuk Customer (Guest & Authenticated) - Prevent Kitchen Access
@@ -75,6 +95,7 @@ Route::middleware(['prevent_kitchen'])->group(function () {
     Route::post('/cart/update', [CustomerController::class, 'updateCart'])->name('customer.cart.update');
     Route::delete('/cart/remove/{menuId}', [CustomerController::class, 'removeFromCart'])->name('customer.cart.remove');
     Route::post('/cart/clear', [CustomerController::class, 'clearCart'])->name('customer.cart.clear');
+    Route::post('/cart/update-notes', [CustomerController::class, 'updateItemNotes'])->name('customer.cart.update-notes');
     Route::post('/order', [CustomerController::class, 'createOrder'])->name('customer.order.create');
     Route::get('/order/{orderNumber}/status', [CustomerController::class, 'orderStatus'])->name('customer.order.status');
     Route::get('/order/{orderNumber}/success', [CustomerController::class, 'orderSuccess'])->name('customer.order.success');

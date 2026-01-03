@@ -229,7 +229,7 @@
         </div>
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-4 col-sm-6">
                     <a href="{{ route('admin.categories') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">
@@ -242,7 +242,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-4 col-sm-6">
                     <a href="{{ route('admin.menu') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">
@@ -255,20 +255,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <a href="{{ route('admin.orders') }}" class="text-decoration-none">
-                        <div class="quick-menu-card h-100">
-                            <div class="card-body text-center">
-                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
-                                    <i class="bi bi-receipt"></i>
-                                </div>
-                                <h5 class="mb-2" style="color: #1E3B2C;">Pesanan</h5>
-                                <p class="small mb-0">Kelola pesanan customer</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-4 col-sm-6">
                     <a href="{{ route('admin.reports') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">
@@ -281,7 +268,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-4 col-sm-6">
                     <a href="{{ route('admin.vouchers.index') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">
@@ -294,20 +281,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <a href="{{ route('admin.pos') }}" class="text-decoration-none">
-                        <div class="quick-menu-card h-100">
-                            <div class="card-body text-center">
-                                <div class="mb-3" style="font-size: 3rem; color: #4A7F5A;">
-                                    <i class="bi bi-calculator"></i>
-                                </div>
-                                <h5 class="mb-2" style="color: #1E3B2C;">POS</h5>
-                                <p class="small mb-0">Point of Sale kasir</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-4 col-sm-6">
                     <a href="{{ route('admin.qr-codes') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">
@@ -320,7 +294,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-4 col-sm-6">
                     <a href="{{ route('admin.customers') }}" class="text-decoration-none">
                         <div class="quick-menu-card h-100">
                             <div class="card-body text-center">

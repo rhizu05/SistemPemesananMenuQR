@@ -104,10 +104,10 @@ class AuthController extends Controller
         // Format phone number
         $phone = FonnteService::formatPhoneNumber($request->phone);
 
-        // Check rate limiting (max 3 OTP per hour per phone)
+        // Check rate limiting (max 1 OTP per 5 minutes per phone)
         $lastOTPTime = session('last_otp_' . $phone);
-        if ($lastOTPTime && Carbon::parse($lastOTPTime)->diffInMinutes(now()) < 20) {
-            $retryAfter = 20 - Carbon::parse($lastOTPTime)->diffInMinutes(now());
+        if ($lastOTPTime && Carbon::parse($lastOTPTime)->diffInMinutes(now()) < 5) {
+            $retryAfter = 5 - Carbon::parse($lastOTPTime)->diffInMinutes(now());
             return back()->withErrors([
                 'phone' => "Terlalu banyak permintaan. Coba lagi dalam $retryAfter menit."
             ]);
@@ -135,6 +135,16 @@ class AuthController extends Controller
                 'phone' => 'Gagal mengirim OTP. Silakan coba lagi.'
             ]);
         }
+    }
+
+    /**
+     * Clear OTP session (when user clicks "Ubah Nomor")
+     */
+    public function clearOTPSession(Request $request)
+    {
+        session()->forget(['otp_code', 'otp_phone', 'otp_name', 'otp_expires_at', 'otp_sent']);
+        
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -234,6 +244,8 @@ class AuthController extends Controller
         switch ($user->role) {
             case 'admin':
                 return redirect()->route('admin.dashboard');
+            case 'cashier':
+                return redirect()->route('cashier.dashboard');
             case 'kitchen':
                 return redirect()->route('kitchen.dashboard');
             case 'customer':

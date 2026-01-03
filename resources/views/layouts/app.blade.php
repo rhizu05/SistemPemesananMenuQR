@@ -106,6 +106,8 @@
             box-shadow: var(--shadow-sm);
             padding: var(--spacing-md) 0;
             border-bottom: 3px solid var(--accent-color);
+            position: relative;
+            z-index: 1050; /* Ensure navbar is on top */
         }
 
         .navbar-brand {
@@ -565,46 +567,70 @@
                             </li>
                         @else
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                                   data-bs-toggle="dropdown" aria-expanded="false" onclick="return false;">
                                     <i class="bi bi-person-circle"></i> {{ Auth::user()->name }}
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-end">
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     @if(Auth::user()->isAdmin())
-                                        <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
-                                            <i class="bi bi-speedometer2"></i> Dashboard Admin
-                                        </a>
-                                        <div class="dropdown-divider"></div>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
+                                                <i class="bi bi-speedometer2"></i> Dashboard Admin
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    @elseif(Auth::user()->isCashier())
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('cashier.dashboard') }}">
+                                                <i class="bi bi-speedometer2"></i> Dashboard Kasir
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
                                     @elseif(Auth::user()->isKitchen())
-                                        <a class="dropdown-item" href="{{ route('kitchen.dashboard') }}">
-                                            <i class="bi bi-speedometer2"></i> Dashboard Kitchen
-                                        </a>
-                                        <div class="dropdown-divider"></div>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('kitchen.dashboard') }}">
+                                                <i class="bi bi-speedometer2"></i> Dashboard Kitchen
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
                                     @else
-                                        <a class="dropdown-item" href="{{ route('customer.menu') }}">
-                                            <i class="bi bi-card-list"></i> Menu
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('customer.cart') }}">
-                                            <i class="bi bi-cart3"></i> Keranjang
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('customer.my-orders') }}">
-                                            <i class="bi bi-clock-history"></i> Riwayat Pesanan
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('customer.profile') }}">
-                                            <i class="bi bi-person"></i> Profil Saya
-                                        </a>
-                                        <div class="dropdown-divider"></div>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('customer.menu') }}">
+                                                <i class="bi bi-card-list"></i> Menu
+                                            </a>
+                                        </li>
+                                        @if(!in_array(Route::currentRouteName(), ['customer.menu', 'customer.scan-qr']))
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('customer.cart') }}">
+                                                    <i class="bi bi-cart3"></i> Keranjang
+                                                </a>
+                                            </li>
+                                        @endif
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('customer.my-orders') }}">
+                                                <i class="bi bi-clock-history"></i> Riwayat Pesanan
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('customer.profile') }}">
+                                                <i class="bi bi-person"></i> Profil Saya
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
                                     @endif
                                     
-                                    <a class="dropdown-item text-danger" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        <i class="bi bi-box-arrow-right"></i> Logout
-                                    </a>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{{ route('logout') }}"
+                                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                            <i class="bi bi-box-arrow-right"></i> Logout
+                                        </a>
+                                    </li>
+                                </ul>
 
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
-                                </div>
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    @csrf
+                                </form>
                             </li>
                         @endguest
                     </ul>
@@ -621,6 +647,14 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    @yield('scripts')
-</body>
-</html>
+    <!-- Force Initialize Dropdowns -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl, {
+                    autoClose: true
+                })
+            });
+        });
+    </script>

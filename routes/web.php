@@ -14,6 +14,7 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'showCustomerLogin'])->name('login');
     Route::post('/login/send-otp', [AuthController::class, 'sendOTP'])->name('customer.sendotp');
     Route::post('/login/verify-otp', [AuthController::class, 'verifyOTP'])->name('customer.verifyotp');
+    Route::post('/login/clear-otp', [AuthController::class, 'clearOTPSession'])->name('customer.clearotp');
 });
 
 // Logout (Universal)

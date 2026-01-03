@@ -32,12 +32,25 @@
                         </div>
                     @endif
 
+                    @php
+                        // Check if we have valid OTP session (all required data exists and not expired)
+                        $hasValidOtpSession = session('otp_sent') && 
+                                              session('otp_phone') && 
+                                              session('otp_expires_at') &&
+                                              \Carbon\Carbon::now()->lessThan(\Carbon\Carbon::parse(session('otp_expires_at')));
+                    @endphp
+                    
                     <!-- Step 1: Input Nama & Nomor HP -->
-                    <div id="phoneStep" style="display: {{ session('otp_sent') ? 'none' : 'block' }}">
+                    <div id="phoneStep" style="display: {{ $hasValidOtpSession ? 'none' : 'block' }}">
+                        <!-- Timer Error Alert (hidden by default) -->
+                        <div id="timerErrorAlert" class="alert alert-warning d-none" role="alert">
+                            <i class="bi bi-clock-history"></i> 
+                            <span id="timerErrorMessage">Harap tunggu sebelum mengirim OTP lagi.</span>
+                        </div>
+                        
                         <form method="POST" action="{{ route('customer.sendotp') }}" id="phoneForm">
                             @csrf
                             
-
 
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Nomor WhatsApp <span class="text-danger">*</span></label>
@@ -71,13 +84,9 @@
                     </div>
 
                     <!-- Step 2: Input OTP -->
-                    <div id="otpStep" style="display: {{ session('otp_sent') ? 'block' : 'none' }}">
+                    <div id="otpStep" style="display: {{ $hasValidOtpSession ? 'block' : 'none' }}">
                         <form method="POST" action="{{ route('customer.verifyotp') }}" id="otpForm">
                             @csrf
-                            
-                            <div class="alert" style="background-color: #E3F2FD; color: #1976D2; border-color: #BBDEFB;">
-                                <i class="bi bi-whatsapp"></i> Kode OTP telah dikirim ke WhatsApp Anda!
-                            </div>
 
                             <div class="mb-3">
                                 <label for="otp" class="form-label">Masukkan Kode OTP <span class="text-danger">*</span></label>
@@ -93,9 +102,21 @@
                                 @error('otp')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted" style="color: #4A7F5A !important;">
-                                    <i class="bi bi-clock"></i> Kode berlaku 5 menit
-                                </small>
+                                <!-- Timer Countdown -->
+                                <div id="timerContainer" class="mt-2">
+                                    <small class="text-muted d-block" style="color: #4A7F5A !important;">
+                                        <i class="bi bi-clock"></i> Kode berlaku: <span id="countdown" class="fw-bold" style="color: #D32F2F;">05:00</span>
+                                    </small>
+                                    <div class="progress mt-1" style="height: 4px;">
+                                        <div class="progress-bar" id="timerProgress" role="progressbar" style="width: 100%; background-color: #2A5C3F;"></div>
+                                    </div>
+                                </div>
+                                <!-- Timer Expired Message -->
+                                <div id="timerExpired" class="mt-2" style="display: none;">
+                                    <small class="text-danger d-block">
+                                        <i class="bi bi-exclamation-circle"></i> Kode OTP sudah kadaluarsa. Silakan kirim ulang.
+                                    </small>
+                                </div>
                             </div>
 
                             <button type="submit" class="btn text-white w-100 btn-lg mb-2"
@@ -114,10 +135,26 @@
                         </form>
 
                         <div class="text-center mt-3">
-                            <p class="text-muted small mb-0">
-                                Tidak menerima kode? 
-                                <a href="#" id="resendOtp" class="text-decoration-none" style="color: #FBC02D;">Kirim ulang</a>
+                            <!-- Timer Running: Hide resend button -->
+                            <p id="resendHidden" class="text-muted small mb-0">
+                                <i class="bi bi-hourglass-split"></i> Tunggu timer selesai untuk kirim ulang
                             </p>
+                            <!-- Timer Finished: Show resend button -->
+                            <div id="resendVisible" style="display: none;">
+                                <p class="text-muted small mb-0">Tidak menerima kode?</p>
+                                <form method="POST" action="{{ route('customer.sendotp') }}" id="resendForm" class="mt-2">
+                                    @csrf
+                                    @php
+                                        $sessionPhone = session('otp_phone', '');
+                                        // Remove 62 prefix to get format 8xxxxxxxxx
+                                        $phoneForResend = preg_replace('/^(\+?62)/', '', $sessionPhone);
+                                    @endphp
+                                    <input type="hidden" name="phone" value="{{ $phoneForResend }}">
+                                    <button type="submit" class="btn btn-warning btn-sm fw-bold" id="resendOtpBtn">
+                                        <i class="bi bi-arrow-repeat"></i> Kirim Ulang OTP
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
 
@@ -125,7 +162,7 @@
 
                     <div class="text-center">
                         <p class="text-muted small mb-0">
-                            <i class="bi bi-shield-check"></i> Admin/Staf? 
+                            <i class="bi bi-shield-check"></i> Admin/Kasir/Koki? 
                             <a href="{{ route('admin.login') }}" class="text-decoration-none" style="color: #4A7F5A;">Login di sini</a>
                         </p>
                     </div>
@@ -156,31 +193,215 @@ document.addEventListener('DOMContentLoaded', function() {
     const phoneStep = document.getElementById('phoneStep');
     const otpStep = document.getElementById('otpStep');
     const backToPhone = document.getElementById('backToPhone');
-    const resendOtp = document.getElementById('resendOtp');
     const phoneInput = document.getElementById('phone');
     const otpInput = document.getElementById('otp');
+    
+    // Timer Elements
+    const countdown = document.getElementById('countdown');
+    const timerProgress = document.getElementById('timerProgress');
+    const timerContainer = document.getElementById('timerContainer');
+    const timerExpired = document.getElementById('timerExpired');
+    const resendHidden = document.getElementById('resendHidden');
+    const resendVisible = document.getElementById('resendVisible');
+    
+    // Timer Constants (5 minutes = 300 seconds)
+    const TIMER_DURATION = 300;
+    const TIMER_STORAGE_KEY = 'otp_timers'; // Store multiple timers per phone
+    
+    // Timer Variables
+    let timerInterval = null;
+    
+    // Get current phone from session (rendered by PHP)
+    const currentSessionPhone = '{{ session("otp_phone", "") }}';
+    
+    // Get all stored timers
+    function getAllTimers() {
+        const stored = localStorage.getItem(TIMER_STORAGE_KEY);
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {
+                return {};
+            }
+        }
+        return {};
+    }
+    
+    // Get timer for specific phone
+    function getTimerForPhone(phone) {
+        const timers = getAllTimers();
+        return timers[phone] || null;
+    }
+    
+    // Save timer for specific phone
+    function saveTimerForPhone(phone, endTime) {
+        const timers = getAllTimers();
+        timers[phone] = endTime;
+        // Clean up expired timers
+        const now = new Date().getTime();
+        for (const p in timers) {
+            if (timers[p] < now) {
+                delete timers[p];
+            }
+        }
+        localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(timers));
+    }
+    
+    // Remove timer for specific phone
+    function removeTimerForPhone(phone) {
+        const timers = getAllTimers();
+        delete timers[phone];
+        localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(timers));
+    }
+    
+    // Initialize timer when OTP step is visible
+    function initTimer() {
+        // If OTP step is not visible, don't initialize
+        if (!otpStep || otpStep.style.display !== 'block') return;
+        if (!currentSessionPhone) return;
+        
+        const storedEndTime = getTimerForPhone(currentSessionPhone);
+        const now = new Date().getTime();
+        
+        // Check if we have existing timer for this phone number that's still valid
+        if (storedEndTime && storedEndTime > now) {
+            // Continue existing timer for THIS phone
+            startCountdown(storedEndTime);
+        } else {
+            // New timer for this phone (no timer or expired)
+            const endTime = now + (TIMER_DURATION * 1000);
+            saveTimerForPhone(currentSessionPhone, endTime);
+            startCountdown(endTime);
+        }
+    }
+    
+    // Start countdown function
+    function startCountdown(endTime) {
+        // Clear any existing interval
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
+        
+        function updateTimer() {
+            const now = new Date().getTime();
+            const remaining = endTime - now;
+            
+            if (remaining <= 0) {
+                // Timer expired
+                clearInterval(timerInterval);
+                localStorage.removeItem(TIMER_STORAGE_KEY);
+                
+                // Update UI
+                if (countdown) countdown.textContent = '00:00';
+                if (timerProgress) timerProgress.style.width = '0%';
+                if (timerContainer) timerContainer.style.display = 'none';
+                if (timerExpired) timerExpired.style.display = 'block';
+                if (resendHidden) resendHidden.style.display = 'none';
+                if (resendVisible) resendVisible.style.display = 'block';
+                
+                return;
+            }
+            
+            // Calculate minutes and seconds
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+            
+            // Update countdown display
+            const displayMinutes = String(minutes).padStart(2, '0');
+            const displaySeconds = String(seconds).padStart(2, '0');
+            if (countdown) countdown.textContent = `${displayMinutes}:${displaySeconds}`;
+            
+            // Update progress bar
+            const totalMs = TIMER_DURATION * 1000;
+            const progressPercent = (remaining / totalMs) * 100;
+            if (timerProgress) timerProgress.style.width = `${progressPercent}%`;
+            
+            // Change color based on remaining time
+            if (remaining <= 60000) { // Last 1 minute - red
+                if (countdown) countdown.style.color = '#D32F2F';
+                if (timerProgress) timerProgress.style.backgroundColor = '#D32F2F';
+            } else if (remaining <= 120000) { // Last 2 minutes - orange
+                if (countdown) countdown.style.color = '#F57C00';
+                if (timerProgress) timerProgress.style.backgroundColor = '#F57C00';
+            }
+        }
+        
+        // Initial update
+        updateTimer();
+        
+        // Update every second
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+    
+    // Reset timer for current phone (for resend only)
+    function resetTimer() {
+        // Remove timer only for current phone number
+        if (currentSessionPhone) {
+            removeTimerForPhone(currentSessionPhone);
+        }
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
+        resetTimerUI();
+    }
+    
+    // Reset timer UI only (without clearing localStorage)
+    function resetTimerUI() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        // Reset UI elements
+        if (timerContainer) timerContainer.style.display = 'block';
+        if (timerExpired) timerExpired.style.display = 'none';
+        if (resendHidden) resendHidden.style.display = 'block';
+        if (resendVisible) resendVisible.style.display = 'none';
+        if (countdown) countdown.style.color = '#D32F2F';
+        if (timerProgress) timerProgress.style.backgroundColor = '#2A5C3F';
+    }
+    
+    // Initialize timer immediately if OTP step is visible
+    initTimer();
 
     // Auto-focus OTP input if on OTP step
     if (otpStep.style.display === 'block' && otpInput) {
         otpInput.focus();
     }
 
-    // Back to phone input
+    // Back to phone input - Also clear session on backend
     if (backToPhone) {
         backToPhone.addEventListener('click', function() {
-            otpStep.style.display = 'none';
-            phoneStep.style.display = 'block';
-            if (phoneInput) phoneInput.focus();
+            // Clear OTP session on backend via AJAX
+            fetch('{{ route("customer.clearotp") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            }).then(response => {
+                // Session cleared, now update UI
+                otpStep.style.display = 'none';
+                phoneStep.style.display = 'block';
+                resetTimerUI();
+                if (phoneInput) phoneInput.focus();
+            }).catch(error => {
+                console.error('Error clearing OTP session:', error);
+                // Still update UI even if request fails
+                otpStep.style.display = 'none';
+                phoneStep.style.display = 'block';
+                resetTimerUI();
+                if (phoneInput) phoneInput.focus();
+            });
         });
     }
 
-    // Resend OTP
-    if (resendOtp) {
-        resendOtp.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (confirm('Kirim ulang kode OTP ke WhatsApp Anda?')) {
-                document.getElementById('phoneForm').submit();
-            }
+    // Resend OTP - using the new resend form
+    // This DOES reset timer since a new OTP will be sent
+    const resendForm = document.getElementById('resendForm');
+    if (resendForm) {
+        resendForm.addEventListener('submit', function(e) {
+            // Reset timer before submitting (clears localStorage)
+            resetTimer();
         });
     }
 
@@ -209,6 +430,83 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.value.length === 6) {
                 // Optional: auto-submit
                 // document.getElementById('otpForm').submit();
+            }
+        });
+    }
+    
+    // Validate phone form submission - check if timer is still active
+    const phoneForm = document.getElementById('phoneForm');
+    const timerErrorAlert = document.getElementById('timerErrorAlert');
+    const timerErrorMessage = document.getElementById('timerErrorMessage');
+    
+    // Variable to track error countdown interval
+    let errorCountdownInterval = null;
+    
+    if (phoneForm) {
+        phoneForm.addEventListener('submit', function(e) {
+            // Get the phone number being submitted
+            const phone = phoneInput ? phoneInput.value : '';
+            if (!phone) return; // Let HTML validation handle empty
+            
+            // Format phone to match storage format (62 + phone)
+            const formattedPhone = '62' + phone.replace(/^0/, '');
+            
+            // Check if there's an active timer for this phone
+            const storedEndTime = getTimerForPhone(formattedPhone);
+            const now = new Date().getTime();
+            
+            if (storedEndTime && storedEndTime > now) {
+                // Timer is still active - prevent submission
+                e.preventDefault();
+                
+                // Clear any existing countdown interval
+                if (errorCountdownInterval) {
+                    clearInterval(errorCountdownInterval);
+                }
+                
+                // Show error message with realtime countdown
+                if (timerErrorAlert) {
+                    timerErrorAlert.classList.remove('d-none');
+                    
+                    // Function to update countdown
+                    function updateErrorCountdown() {
+                        const currentTime = new Date().getTime();
+                        const remaining = storedEndTime - currentTime;
+                        
+                        if (remaining <= 0) {
+                            // Timer expired - hide error and clear interval
+                            timerErrorAlert.classList.add('d-none');
+                            clearInterval(errorCountdownInterval);
+                            errorCountdownInterval = null;
+                            return;
+                        }
+                        
+                        const minutes = Math.floor(remaining / 60000);
+                        const seconds = Math.floor((remaining % 60000) / 1000);
+                        
+                        if (timerErrorMessage) {
+                            timerErrorMessage.textContent = `Kode OTP sudah dikirim ke nomor ini. Harap tunggu ${minutes} menit ${seconds} detik sebelum mengirim ulang.`;
+                        }
+                    }
+                    
+                    // Initial update
+                    updateErrorCountdown();
+                    
+                    // Update every second
+                    errorCountdownInterval = setInterval(updateErrorCountdown, 1000);
+                }
+                
+                return false;
+            }
+            
+            // No active timer - allow submission
+            // Hide any previous error and clear interval
+            if (timerErrorAlert) {
+                timerErrorAlert.classList.add('d-none');
+            }
+            if (errorCountdownInterval) {
+                clearInterval(errorCountdownInterval);
+                errorCountdownInterval = null;
             }
         });
     }

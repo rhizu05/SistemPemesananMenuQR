@@ -52,11 +52,11 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th width="5%">#</th>
-                                <th width="10%">Gambar</th>
-                                <th width="20%">Nama Menu</th>
-                                <th width="15%">Kategori</th>
-                                <th width="12%">Harga</th>
+                                <th width="5%" class="text-center">No</th>
+                                <th width="10%"class="text-center">Gambar</th>
+                                <th width="20%"class="text-center">Nama Menu</th>
+                                <th width="15%"class="text-center">Kategori</th>
+                                <th width="12%"class="text-center">Harga</th>
                                 <th width="8%" class="text-center">Stok</th>
                                 <th width="10%" class="text-center">Status</th>
                                 <th width="15%" class="text-center">Aksi</th>
@@ -65,8 +65,8 @@
                         <tbody>
                             @foreach($menus as $index => $menu)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>
+                                    <td class="text-center">{{ $index + 1 }}</td>
+                                    <td class="text-center">
                                         @if($menu->image)
                                             <img src="{{ asset('storage/' . $menu->image) }}" 
                                                  alt="{{ $menu->name }}" 
@@ -79,18 +79,18 @@
                                             </div>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <strong>{{ $menu->name }}</strong>
                                         @if($menu->description)
                                             <br><small class="text-muted">{{ Str::limit($menu->description, 50) }}</small>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <span class="badge text-white" style="background-color: #8FC69A;">
                                             {{ $menu->category->name ?? '-' }}
                                         </span>
                                     </td>
-                                    <td><strong>Rp {{ number_format($menu->price, 0, ',', '.') }}</strong></td>
+                                    <td class="text-center"><strong>Rp {{ number_format($menu->price, 0, ',', '.') }}</strong></td>
                                     <td class="text-center">
                                         @if($menu->stock > 10)
                                             <span class="badge text-white" style="background-color: #4A7F5A;">{{ $menu->stock }}</span>
@@ -157,4 +157,19 @@
         </a>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    // Ensure Bootstrap dropdowns work properly
+    document.addEventListener('DOMContentLoaded', function() {
+        // Re-initialize all Bootstrap dropdowns
+        var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+        dropdownElementList.forEach(function (dropdownToggleEl) {
+            new bootstrap.Dropdown(dropdownToggleEl, {
+                autoClose: true
+            });
+        });
+    });
+</script>
 @endsection

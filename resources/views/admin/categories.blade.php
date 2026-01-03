@@ -53,11 +53,10 @@
                         <thead class="table-light">
                             <tr>
                                 <th width="5%">#</th>
-                                <th width="25%">Nama Kategori</th>
-                                <th width="35%">Deskripsi</th>
-                                <th width="10%" class="text-center">Jumlah Menu</th>
-                                <th width="10%" class="text-center">Status</th>
-                                <th width="15%" class="text-center">Aksi</th>
+                                <th width="35%">Nama Kategori</th>
+                                <th width="20%" class="text-center">Jumlah Menu</th>
+                                <th width="15%" class="text-center">Status</th>
+                                <th width="25%" class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -65,11 +64,6 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td><strong>{{ $category->name }}</strong></td>
-                                    <td>
-                                        <small class="text-muted">
-                                            {{ $category->description ?? '-' }}
-                                        </small>
-                                    </td>
                                     <td class="text-center">
                                         <span class="badge text-white" style="background-color: #8FC69A;">
                                             {{ $category->menus_count }} menu
