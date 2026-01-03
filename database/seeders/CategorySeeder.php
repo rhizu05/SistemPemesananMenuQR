@@ -41,10 +41,12 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            Category::create($category);
+            Category::firstOrCreate(
+                ['name' => $category['name']], // Check by name
+                $category // Create with these attributes if not found
+            );
         }
 
         $this->command->info('✅ Categories seeded successfully!');
-        $this->command->info('Created ' . count($categories) . ' default categories.');
     }
 }
