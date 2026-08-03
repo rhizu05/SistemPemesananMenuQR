@@ -39,68 +39,59 @@ Login: Admin/Kasir/Dapur memakai **email + password**, Pelanggan memakai **nomor
 
 ## Tampilan (Screenshot)
 
-> Screenshot alur utama diletakkan di `docs/screenshots/`. Ganti nama file di bawah setelah gambar diambil.
-
 | Menu Digital (Pelanggan) | Dashboard Admin | Dashboard Dapur |
 |--------------------------|-----------------|-----------------|
-| `docs/screenshots/customer/02-menu.png` | `docs/screenshots/admin/01-dashboard.png` | `docs/screenshots/kitchen/01-dashboard.png` |
+| ![Menu Digital](docs/screenshots/customer/02-customer-menu.jpeg) | ![Dashboard Admin](docs/screenshots/admin/01-admin-dashboard.png) | ![Dashboard Dapur](docs/screenshots/kitchen/01-kitchen-dashboard.png) |
 
-### Template Alur Screenshot
+### Galeri Screenshot
 
-**Persiapan:** jalankan `php artisan migrate:fresh --seed` (membuat menu, kategori, voucher, dan 4 akun demo).
-
-**Viewport:** alur pelanggan memakai mode mobile (DevTools → iPhone 12/13, 390×844); admin/kasir/dapur memakai desktop 1440×900. Simpan PNG; untuk alur aksi gunakan GIF (ScreenToGif / OBS).
+Semua screenshot disimpan di `docs/screenshots/`:
 
 ```
 docs/screenshots/
 ├── customer/            # alur pelanggan
 ├── admin/               # dashboard admin
 ├── cashier/
-├── kitchen/
-└── demo.gif             # gif alur utama (opsional)
+└── kitchen/
 ```
 
-**1. Alur Pelanggan (9 shot — paling penting)**
+**1. Alur Pelanggan (6 shot)**
 
 | # | Nama File | URL | Aksi |
 |---|-----------|-----|------|
-| 1 | `customer/01-scan-qr.png` | `/scan-qr` | Halaman scan QR |
-| 2 | `customer/02-menu.png` | `/?table=1` | Daftar menu + kategori + harga |
-| 3 | `customer/03-menu-detail.png` | `/menu?table=1` | Detail 1 item (qty, catatan) |
-| 4 | `customer/04-cart.png` | `/cart` | Keranjang berisi 2–3 item |
-| 5 | `customer/05-voucher.png` | `/cart` (bagian voucher) | Input kode voucher + diskon |
-| 6 | `customer/06-checkout.png` | `/cart` (checkout) | Ringkasan order + total akhir |
-| 7 | `customer/07-payment.png` | Modal Midtrans | Snap payment (sandbox) |
-| 8 | `customer/08-order-success.png` | `/order/{n}/success` | Pesanan berhasil + nomor order |
-| 9 | `customer/09-tracking.png` | `/order/{n}/status` | Status live: Preparing → Ready |
+| 1 | `customer/01-customer-scan-qr.jpeg` | `/scan-qr` | Halaman scan QR |
+| 2 | `customer/02-customer-menu.jpeg` | `/?table=1` | Daftar menu + kategori + harga |
+| 3 | `customer/03-customer-cart.jpeg` | `/cart` | Keranjang berisi item |
+| 4 | `customer/04-customer-payment.jpeg` | Modal Midtrans | Pembayaran QRIS |
+| 5 | `customer/05-customer-order-success.jpeg` | `/order/{n}/success` | Pesanan berhasil + nomor order |
+| 6 | `customer/06-customer-history.jpeg` | `/orders` | Riwayat pesanan |
 
 **2. Alur Admin (6 shot)**
 
 | # | Nama File | URL | Aksi |
 |---|-----------|-----|------|
-| 1 | `admin/01-dashboard.png` | `/admin` | Statistik penjualan |
-| 2 | `admin/02-menu.png` | `/admin/menu` | Tabel manajemen menu |
-| 3 | `admin/03-menu-create.png` | `/admin/menu/create` | Form tambah menu |
-| 4 | `admin/04-qr-codes.png` | `/admin/qr-codes` | Generate QR per meja |
-| 5 | `admin/05-vouchers.png` | `/admin/vouchers` | Daftar voucher promo |
-| 6 | `admin/06-reports.png` | `/admin/reports` | Laporan penjualan |
+| 1 | `admin/01-admin-dashboard.png` | `/admin` | Statistik penjualan |
+| 2 | `admin/02-admin-manage-menu.png` | `/admin/menu` | Manajemen daftar menu |
+| 3 | `admin/03-admin-add-menu.png` | `/admin/menu/create` | Form tambah menu |
+| 4 | `admin/04-admin-manage-qr-table.png` | `/admin/qr-codes` | Generate QR per meja |
+| 5 | `admin/05-admin-manage-voucher.png` | `/admin/vouchers` | Daftar voucher promo |
+| 6 | `admin/06-admin-report.png` | `/admin/reports` | Laporan penjualan |
 
-**3. Alur Kasir (3 shot)**
-
-| # | Nama File | URL | Aksi |
-|---|-----------|-----|------|
-| 1 | `cashier/01-pos.png` | `/cashier/pos` | Input pesanan walk-in manual |
-| 2 | `cashier/02-payments.png` | `/cashier/payments` | Antrian pembayaran tunai |
-| 3 | `cashier/03-receipt.png` | `/admin/order/{id}/receipt` | Cetak struk |
-
-**4. Alur Dapur (2 shot)** — pastikan ada 1 order berbayar agar antrian tampil.
+**3. Alur Kasir (5 shot)**
 
 | # | Nama File | URL | Aksi |
 |---|-----------|-----|------|
-| 1 | `kitchen/01-dashboard.png` | `/kitchen` | Antrian pesanan real-time |
-| 2 | `kitchen/02-status.png` | `/kitchen` (klik update) | Ubah status: Proses → Siap |
+| 1 | `cashier/01-cashier-dashboard.png` | `/cashier` | Dashboard kasir |
+| 2 | `cashier/02-cashier-pos.png` | `/cashier/pos` | Input pesanan walk-in manual |
+| 3 | `cashier/03-cashier-payment-qr.png` | `/cashier/payments` | Verifikasi pembayaran QR |
+| 4 | `cashier/04-cashier-order-success.png` | `/order/{n}/success` | Pesanan berhasil |
+| 5 | `cashier/05-cashier-receipt.png` | `/admin/order/{id}/receipt` | Cetak struk |
 
-**GIF alur utama (opsional):** rekam 1 take ~15 detik (mobile): scan QR → menu → tambah item → keranjang → checkout → Midtrans sandbox → sukses. Simpan sebagai `docs/screenshots/demo.gif`.
+**4. Alur Dapur (1 shot)**
+
+| # | Nama File | URL | Aksi |
+|---|-----------|-----|------|
+| 1 | `kitchen/01-kitchen-dashboard.png` | `/kitchen` | Antrian pesanan real-time |
 
 ## Demo Live
 
