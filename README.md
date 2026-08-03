@@ -5,6 +5,10 @@ Sistem Pemesanan Menu Restoran Berbasis **QR Code** untuk restoran **Dapoer Kate
 ![Laravel](https://img.shields.io/badge/Laravel-12-red?logo=laravel&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-8.2+-blueviolet?logo=php)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple?logo=bootstrap)
+![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)
+![Tests](https://img.shields.io/badge/tests-102%20passed-brightgreen)
+
+> Ganti `YOUR_USERNAME/YOUR_REPO` pada badge CI dengan username & nama repositori GitHub kamu setelah di-push.
 
 ---
 
@@ -32,6 +36,20 @@ Sistem Pemesanan Menu Restoran Berbasis **QR Code** untuk restoran **Dapoer Kate
 | **Pelanggan** | Menu digital, keranjang, checkout, tracking pesanan, voucher |
 
 Login: Admin/Kasir/Dapur memakai **email + password**, Pelanggan memakai **nomor WhatsApp + OTP**.
+
+## Tampilan (Screenshot)
+
+> Tambahkan screenshot alur utama di folder `docs/screenshots/` lalu ganti nama file di bawah.
+
+| Menu Digital (Pelanggan) | Dashboard Admin | Dashboard Dapur |
+|--------------------------|-----------------|-----------------|
+| `docs/screenshots/menu.png` | `docs/screenshots/admin.png` | `docs/screenshots/kitchen.png` |
+
+## Demo Live
+
+> **Belum tersedia.** Isi link di bawah setelah deploy (panduan: [`docs/6_DEPLOYMENT_RENDER.md`](./docs/6_DEPLOYMENT_RENDER.md)).
+
+🔗 [https://your-app.onrender.com](https://your-app.onrender.com)
 
 ## Teknologi
 
@@ -127,6 +145,8 @@ Akses aplikasi di `http://localhost:8000`.
 | Dapur | `kitchen@dapoerkatendjo.com` | `password` |
 | Pelanggan | `customer@akpl.com` | `password` |
 
+> ⚠️ **Akun di atas hanya untuk demo/lokal.** Ganti password & email default sebelum dipakai di produksi.
+>
 > Jalankan seeder: `php artisan db:seed`
 
 ## Menjalankan Test
@@ -140,6 +160,8 @@ php artisan test --parallel   # lebih cepat
 ```
 
 Alternatif interaktif: `.\run-tests.ps1`
+
+> **CI:** GitHub Actions (`.github/workflows/ci.yml`) otomatis menjalankan test (PHP 8.2–8.4), build asset (Vite), dan cek code style (Pint) pada setiap push/PR.
 
 ## Deployment
 
