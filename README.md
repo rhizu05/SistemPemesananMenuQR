@@ -39,59 +39,67 @@ Login: Admin/Kasir/Dapur memakai **email + password**, Pelanggan memakai **nomor
 
 ## Tampilan (Screenshot)
 
-| Menu Digital (Pelanggan) | Dashboard Admin | Dashboard Dapur |
-|--------------------------|-----------------|-----------------|
-| ![Menu Digital](docs/screenshots/customer/02-customer-menu.jpeg) | ![Dashboard Admin](docs/screenshots/admin/01-admin-dashboard.png) | ![Dashboard Dapur](docs/screenshots/kitchen/01-kitchen-dashboard.png) |
+### Alur Pelanggan
 
-### Galeri Screenshot
+**1. Scan QR** — halaman awal pemindaian QR meja
+<img src="docs/screenshots/customer/01-customer-scan-qr.jpeg" alt="Scan QR" width="280">
 
-Semua screenshot disimpan di `docs/screenshots/`:
+**2. Menu Digital** — daftar menu, kategori, dan harga
+<img src="docs/screenshots/customer/02-customer-menu.jpeg" alt="Menu Digital" width="280">
 
-```
-docs/screenshots/
-├── customer/            # alur pelanggan
-├── admin/               # dashboard admin
-├── cashier/
-└── kitchen/
-```
+**3. Keranjang** — item yang dipilih sebelum checkout
+<img src="docs/screenshots/customer/03-customer-cart.jpeg" alt="Keranjang" width="280">
 
-**1. Alur Pelanggan (6 shot)**
+**4. Pembayaran** — pembayaran QRIS
+<img src="docs/screenshots/customer/04-customer-payment.jpeg" alt="Pembayaran" width="280">
 
-| # | Nama File | URL | Aksi |
-|---|-----------|-----|------|
-| 1 | `customer/01-customer-scan-qr.jpeg` | `/scan-qr` | Halaman scan QR |
-| 2 | `customer/02-customer-menu.jpeg` | `/?table=1` | Daftar menu + kategori + harga |
-| 3 | `customer/03-customer-cart.jpeg` | `/cart` | Keranjang berisi item |
-| 4 | `customer/04-customer-payment.jpeg` | Modal Midtrans | Pembayaran QRIS |
-| 5 | `customer/05-customer-order-success.jpeg` | `/order/{n}/success` | Pesanan berhasil + nomor order |
-| 6 | `customer/06-customer-history.jpeg` | `/orders` | Riwayat pesanan |
+**5. Pesanan Berhasil** — nomor order setelah checkout
+<img src="docs/screenshots/customer/05-customer-order-success.jpeg" alt="Pesanan Berhasil" width="280">
 
-**2. Alur Admin (6 shot)**
+**6. Riwayat Pesanan**
+<img src="docs/screenshots/customer/06-customer-history.jpeg" alt="Riwayat Pesanan" width="280">
 
-| # | Nama File | URL | Aksi |
-|---|-----------|-----|------|
-| 1 | `admin/01-admin-dashboard.png` | `/admin` | Statistik penjualan |
-| 2 | `admin/02-admin-manage-menu.png` | `/admin/menu` | Manajemen daftar menu |
-| 3 | `admin/03-admin-add-menu.png` | `/admin/menu/create` | Form tambah menu |
-| 4 | `admin/04-admin-manage-qr-table.png` | `/admin/qr-codes` | Generate QR per meja |
-| 5 | `admin/05-admin-manage-voucher.png` | `/admin/vouchers` | Daftar voucher promo |
-| 6 | `admin/06-admin-report.png` | `/admin/reports` | Laporan penjualan |
+### Alur Admin
 
-**3. Alur Kasir (5 shot)**
+**1. Dashboard** — statistik penjualan
+<img src="docs/screenshots/admin/01-admin-dashboard.png" alt="Dashboard Admin" width="480">
 
-| # | Nama File | URL | Aksi |
-|---|-----------|-----|------|
-| 1 | `cashier/01-cashier-dashboard.png` | `/cashier` | Dashboard kasir |
-| 2 | `cashier/02-cashier-pos.png` | `/cashier/pos` | Input pesanan walk-in manual |
-| 3 | `cashier/03-cashier-payment-qr.png` | `/cashier/payments` | Verifikasi pembayaran QR |
-| 4 | `cashier/04-cashier-order-success.png` | `/order/{n}/success` | Pesanan berhasil |
-| 5 | `cashier/05-cashier-receipt.png` | `/admin/order/{id}/receipt` | Cetak struk |
+**2. Manajemen Menu**
+<img src="docs/screenshots/admin/02-admin-manage-menu.png" alt="Manajemen Menu" width="480">
 
-**4. Alur Dapur (1 shot)**
+**3. Tambah Menu**
+<img src="docs/screenshots/admin/03-admin-add-menu.png" alt="Tambah Menu" width="480">
 
-| # | Nama File | URL | Aksi |
-|---|-----------|-----|------|
-| 1 | `kitchen/01-kitchen-dashboard.png` | `/kitchen` | Antrian pesanan real-time |
+**4. QR Code Meja**
+<img src="docs/screenshots/admin/04-admin-manage-qr-table.png" alt="QR Code Meja" width="480">
+
+**5. Manajemen Voucher**
+<img src="docs/screenshots/admin/05-admin-manage-voucher.png" alt="Manajemen Voucher" width="480">
+
+**6. Laporan Penjualan**
+<img src="docs/screenshots/admin/06-admin-report.png" alt="Laporan Penjualan" width="480">
+
+### Alur Kasir
+
+**1. Dashboard Kasir**
+<img src="docs/screenshots/cashier/01-cashier-dashboard.png" alt="Dashboard Kasir" width="480">
+
+**2. POS** — input pesanan manual
+<img src="docs/screenshots/cashier/02-cashier-pos.png" alt="POS" width="480">
+
+**3. Verifikasi Pembayaran QR**
+<img src="docs/screenshots/cashier/03-cashier-payment-qr.png" alt="Verifikasi Pembayaran" width="480">
+
+**4. Pesanan Berhasil**
+<img src="docs/screenshots/cashier/04-cashier-order-success.png" alt="Pesanan Berhasil" width="480">
+
+**5. Cetak Struk**
+<img src="docs/screenshots/cashier/05-cashier-receipt.png" alt="Cetak Struk" width="480">
+
+### Alur Dapur
+
+**1. Dashboard Dapur** — antrian pesanan real-time
+<img src="docs/screenshots/kitchen/01-kitchen-dashboard.png" alt="Dashboard Dapur" width="480">
 
 ## Demo Live
 
