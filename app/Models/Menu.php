@@ -18,6 +18,11 @@ class Menu extends Model
         'stock',
         'category_id'
     ];
+
+    protected $casts = [
+        'stock' => 'integer',
+        'is_available' => 'boolean',
+    ];
     
     // Relasi ke kategori
     public function category()

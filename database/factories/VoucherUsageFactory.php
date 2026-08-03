@@ -1,0 +1,32 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
+use App\Models\User;
+use App\Models\Order;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\VoucherUsage>
+ */
+class VoucherUsageFactory extends Factory
+{
+    protected $model = VoucherUsage::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'voucher_id' => Voucher::factory(),
+            'user_id' => User::factory(),
+            'order_id' => Order::factory(),
+            'discount_amount' => fake()->numberBetween(1000, 50000),
+        ];
+    }
+}

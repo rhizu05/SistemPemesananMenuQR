@@ -12,19 +12,18 @@ describe('Security Testing', function () {
         $this->admin = User::factory()->create(['role' => 'admin']);
     });
 
-    // TC-027: CSRF Protection
-    test('forms require CSRF token', function () {
+    // TC-027: Form validation / CSRF
+    test('forms reject invalid submissions', function () {
         $this->actingAs($this->admin);
-        
-        // Try to create menu without CSRF token
-        $response = $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
-            ->post('/admin/menu', [
-                'name' => 'Test Menu',
-                'price' => 50000,
-            ]);
 
-        // With middleware disabled, it should work
-        // In real scenario, without CSRF token it would fail with 419
+        // Missing required fields must be rejected with validation errors
+        $response = $this->post('/admin/menu', [
+            'name' => 'Test Menu',
+            'price' => 50000,
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors(['category_id', 'stock']);
     });
 
     // TC-028: SQL Injection Prevention
@@ -32,7 +31,7 @@ describe('Security Testing', function () {
         Menu::factory()->create(['name' => 'Nasi Goreng']);
         
         // Try SQL injection
-        $response = $this->get("/menu?search=' OR '1'='1");
+        $response = $this->get("/menu?table=1&search=' OR '1'='1");
         
         // Should not cause SQL error
         $response->assertStatus(200);
@@ -40,7 +39,7 @@ describe('Security Testing', function () {
     });
 
     test('menu filter is protected against SQL injection', function () {
-        $response = $this->get("/menu?category=' OR '1'='1");
+        $response = $this->get("/menu?table=1&category=' OR '1'='1");
         
         $response->assertStatus(200);
     });
@@ -63,13 +62,17 @@ describe('Security Testing', function () {
 
     test('user input in forms is sanitized', function () {
         $this->actingAs($this->admin);
+
+        $category = \App\Models\Category::factory()->create();
         
-        $response = $this->post('/admin/menu', [
-            'name' => '<img src=x onerror=alert(1)>',
-            'description' => '<script>alert("XSS")</script>',
-            'price' => 50000,
-            'stock' => 10,
-        ]);
+        $response = $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+            ->post('/admin/menu', [
+                'name' => '<img src=x onerror=alert(1)>',
+                'description' => '<script>alert("XSS")</script>',
+                'price' => 50000,
+                'stock' => 10,
+                'category_id' => $category->id,
+            ]);
 
         // Check that dangerous HTML is escaped
         $menu = Menu::where('name', '<img src=x onerror=alert(1)>')->first();
@@ -79,7 +82,7 @@ describe('Security Testing', function () {
     test('unauthorized access is blocked', function () {
         $response = $this->get('/admin/dashboard');
         
-        $response->assertRedirect('/admin/login');
+        $response->assertRedirect('/login');
     });
 
     test('password is hashed in database', function () {

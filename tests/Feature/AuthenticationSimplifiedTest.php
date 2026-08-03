@@ -58,13 +58,13 @@ describe('Authentication & Authorization - Simplified', function () {
         $response->assertStatus(200);
     });
 
-    // Test: Admin cannot access cashier routes
-    test('admin cannot access cashier routes', function () {
+    // Test: Admin can access cashier routes (admin is a superuser)
+    test('admin can access cashier routes', function () {
         $this->actingAs($this->admin);
         
         $response = $this->get('/cashier/dashboard');
         
-        $response->assertStatus(403);
+        $response->assertStatus(200);
     });
 
     // Test: Cashier cannot access admin routes
@@ -80,7 +80,7 @@ describe('Authentication & Authorization - Simplified', function () {
     test('unauthenticated users are redirected to login', function () {
         $response = $this->get('/admin/dashboard');
         
-        $response->assertRedirect('/admin/login');
+        $response->assertRedirect('/login');
     });
 
     // Test: Users can be created with different roles

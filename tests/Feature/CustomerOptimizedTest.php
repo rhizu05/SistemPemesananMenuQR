@@ -20,7 +20,7 @@ describe('Customer Features - Optimized', function () {
     test('guest can view menu page', function () {
         Menu::factory()->count(5)->create(['is_available' => true]);
         
-        $response = $this->get('/menu');
+        $response = $this->get('/menu?table=1');
         
         $response->assertStatus(200);
     });
@@ -30,7 +30,7 @@ describe('Customer Features - Optimized', function () {
         
         Menu::factory()->count(5)->create(['is_available' => true]);
         
-        $response = $this->get('/menu');
+        $response = $this->get('/menu?table=1');
         
         $response->assertStatus(200);
     });
@@ -60,7 +60,7 @@ describe('Customer Features - Optimized', function () {
             'is_available' => true,
         ]);
 
-        $response = $this->get('/menu');
+        $response = $this->get('/menu?table=1');
         
         $response->assertStatus(200);
     });
@@ -69,14 +69,14 @@ describe('Customer Features - Optimized', function () {
         Menu::factory()->count(3)->create(['is_available' => true]);
         Menu::factory()->count(2)->create(['is_available' => false]);
 
-        $response = $this->get('/menu');
+        $response = $this->get('/menu?table=1');
         
         $response->assertStatus(200);
         // Should show available menus
     });
 
     test('customer can access home page', function () {
-        $response = $this->get('/');
+        $response = $this->get('/?table=1');
         
         $response->assertStatus(200);
     });

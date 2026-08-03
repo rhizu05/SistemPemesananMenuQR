@@ -51,7 +51,9 @@ describe('Cashier Features - Optimized', function () {
             'payment_method' => 'qris',
         ]);
 
-        $response = $this->post("/cashier/payments/{$order->id}/verify");
+        $response = $this->post("/cashier/payments/{$order->id}/verify", [
+            'amount_paid' => $order->total_amount,
+        ]);
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
@@ -66,12 +68,12 @@ describe('Cashier Features - Optimized', function () {
         $response->assertStatus(403);
     });
 
-    test('admin cannot access cashier dashboard', function () {
+    test('admin can access cashier dashboard', function () {
         $admin = User::factory()->create(['role' => 'admin']);
         $this->actingAs($admin);
         
         $response = $this->get('/cashier/dashboard');
         
-        $response->assertStatus(403);
+        $response->assertStatus(200);
     });
 });

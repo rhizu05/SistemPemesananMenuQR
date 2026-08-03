@@ -243,6 +243,7 @@ describe('Voucher System - Comprehensive Tests', function () {
             'voucher_id' => $voucher->id,
             'user_id' => $this->customer->id,
             'order_id' => Order::factory()->create()->id,
+            'discount_amount' => 20000,
         ]);
 
         $voucher->increment('used_count');
@@ -331,7 +332,7 @@ describe('Voucher System - Comprehensive Tests', function () {
         $order = Order::factory()->create([
             'user_id' => $this->customer->id,
             'subtotal' => $subtotal,
-            'discount' => $discount,
+            'discount_amount' => $discount,
             'total_amount' => $subtotal - $discount,
             'voucher_id' => $voucher->id,
         ]);
@@ -340,6 +341,7 @@ describe('Voucher System - Comprehensive Tests', function () {
             'voucher_id' => $voucher->id,
             'user_id' => $this->customer->id,
             'order_id' => $order->id,
+            'discount_amount' => $discount,
         ]);
 
         $voucher->increment('used_count');

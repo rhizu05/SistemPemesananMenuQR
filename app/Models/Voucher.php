@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
 class Voucher extends Model
 {
+    /** @use HasFactory<\Database\Factories\VoucherFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'code',
         'name',
@@ -25,9 +29,9 @@ class Voucher extends Model
     ];
 
     protected $casts = [
-        'value' => 'decimal:2',
-        'min_transaction' => 'decimal:2',
-        'max_discount' => 'decimal:2',
+        'value' => 'float',
+        'min_transaction' => 'float',
+        'max_discount' => 'float',
         'valid_from' => 'datetime',
         'valid_until' => 'datetime',
         'is_active' => 'boolean',
@@ -123,7 +127,7 @@ class Voucher extends Model
     public function calculateDiscount($subtotal)
     {
         if ($subtotal < $this->min_transaction) {
-            return 0;
+            return 0.0;
         }
 
         if ($this->type === 'percentage') {
@@ -133,11 +137,11 @@ class Voucher extends Model
                 $discount = $this->max_discount;
             }
 
-            return $discount;
+            return (float) $discount;
         }
 
         // fixed_amount
-        return min($this->value, $subtotal);
+        return (float) min($this->value, $subtotal);
     }
 
     public function getFormattedValueAttribute()

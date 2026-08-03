@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class VoucherUsage extends Model
 {
+    /** @use HasFactory<\Database\Factories\VoucherUsageFactory> */
+    use HasFactory;
+
     protected $table = 'voucher_usage';
     
     public $timestamps = false; // Using used_at instead
