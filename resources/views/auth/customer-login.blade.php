@@ -38,6 +38,11 @@
                                               session('otp_phone') && 
                                               session('otp_expires_at') &&
                                               \Carbon\Carbon::now()->lessThan(\Carbon\Carbon::parse(session('otp_expires_at')));
+
+                        // Remaining time until the server-side OTP expiry (source of truth for the countdown)
+                        $otpRemainingSeconds = $hasValidOtpSession
+                            ? max(0, (int) \Carbon\Carbon::now()->diffInSeconds(\Carbon\Carbon::parse(session('otp_expires_at'))))
+                            : 0;
                     @endphp
                     
                     <!-- Step 1: Input Nama & Nomor HP -->
@@ -105,7 +110,7 @@
                                 <!-- Timer Countdown -->
                                 <div id="timerContainer" class="mt-2">
                                     <small class="text-muted d-block" style="color: #4A7F5A !important;">
-                                        <i class="bi bi-clock"></i> Kode berlaku: <span id="countdown" class="fw-bold" style="color: #D32F2F;">05:00</span>
+                                        <i class="bi bi-clock"></i> Kode berlaku: <span id="countdown" class="fw-bold" style="color: #D32F2F;">{{ sprintf('%02d:%02d', intdiv($otpRemainingSeconds, 60), $otpRemainingSeconds % 60) }}</span>
                                     </small>
                                     <div class="progress mt-1" style="height: 4px;">
                                         <div class="progress-bar" id="timerProgress" role="progressbar" style="width: 100%; background-color: #2A5C3F;"></div>
@@ -213,6 +218,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Get current phone from session (rendered by PHP)
     const currentSessionPhone = '{{ session("otp_phone", "") }}';
+
+    // Server-side OTP state (source of truth for the countdown)
+    const hasValidOtpSession = {{ $hasValidOtpSession ? 'true' : 'false' }};
+    const serverRemainingSeconds = {{ $otpRemainingSeconds }};
     
     // Get all stored timers
     function getAllTimers() {
@@ -254,24 +263,53 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(timers));
     }
     
-    // Initialize timer when OTP step is visible
+    // Show the expired state (hide timer, reveal resend button)
+    function showTimerExpired() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        if (countdown) countdown.textContent = '00:00';
+        if (timerProgress) timerProgress.style.width = '0%';
+        if (timerContainer) timerContainer.style.display = 'none';
+        if (timerExpired) timerExpired.style.display = 'block';
+        if (resendHidden) resendHidden.style.display = 'none';
+        if (resendVisible) resendVisible.style.display = 'block';
+    }
+
+    // Initialize timer when OTP step is visible.
+    // The countdown is authoritative from the server session (otp_expires_at),
+    // so refreshing or leaving & returning keeps the real remaining time.
     function initTimer() {
         // If OTP step is not visible, don't initialize
         if (!otpStep || otpStep.style.display !== 'block') return;
         if (!currentSessionPhone) return;
-        
-        const storedEndTime = getTimerForPhone(currentSessionPhone);
+
         const now = new Date().getTime();
-        
-        // Check if we have existing timer for this phone number that's still valid
+
+        if (hasValidOtpSession) {
+            // Use the server-side expiry as the single source of truth
+            if (serverRemainingSeconds > 0) {
+                const endTime = now + (serverRemainingSeconds * 1000);
+                saveTimerForPhone(currentSessionPhone, endTime);
+                startCountdown(endTime);
+            } else {
+                showTimerExpired();
+            }
+            return;
+        }
+
+        // No active server OTP - keep only the resend-cooldown guard from localStorage
+        const storedEndTime = getTimerForPhone(currentSessionPhone);
         if (storedEndTime && storedEndTime > now) {
-            // Continue existing timer for THIS phone
             startCountdown(storedEndTime);
-        } else {
-            // New timer for this phone (no timer or expired)
-            const endTime = now + (TIMER_DURATION * 1000);
-            saveTimerForPhone(currentSessionPhone, endTime);
-            startCountdown(endTime);
+            return;
+        }
+
+        // No OTP in progress - show the phone step without a timer
+        if (phoneStep && otpStep) {
+            otpStep.style.display = 'none';
+            phoneStep.style.display = 'block';
         }
     }
     
@@ -288,16 +326,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (remaining <= 0) {
                 // Timer expired
-                clearInterval(timerInterval);
-                localStorage.removeItem(TIMER_STORAGE_KEY);
-                
-                // Update UI
-                if (countdown) countdown.textContent = '00:00';
-                if (timerProgress) timerProgress.style.width = '0%';
-                if (timerContainer) timerContainer.style.display = 'none';
-                if (timerExpired) timerExpired.style.display = 'block';
-                if (resendHidden) resendHidden.style.display = 'none';
-                if (resendVisible) resendVisible.style.display = 'block';
+                if (currentSessionPhone) {
+                    removeTimerForPhone(currentSessionPhone);
+                }
+                showTimerExpired();
                 
                 return;
             }

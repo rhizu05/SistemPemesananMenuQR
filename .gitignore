@@ -23,6 +23,7 @@
 *.backup.php
 /boost.json
 /AGENTS.md
+/serve-ngrok.ps1
 /vendor
 Homestead.json
 Homestead.yaml
