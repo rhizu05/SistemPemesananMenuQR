@@ -18,6 +18,9 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/testsprite_tests
+*.backup
+*.backup.php
 /vendor
 Homestead.json
 Homestead.yaml
