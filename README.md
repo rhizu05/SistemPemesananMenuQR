@@ -101,7 +101,7 @@ akpl/
 
 ## Persyaratan
 
-- PHP **8.2+**
+- PHP **8.3+** (toolchain test — Pest 4 / PHPUnit 12 — butuh PHP ≥ 8.3)
 - Composer
 - Node.js & NPM
 - SQLite (default, sudah tersedia di `database/database.sqlite`) atau MySQL/PostgreSQL

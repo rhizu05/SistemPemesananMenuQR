@@ -21,6 +21,8 @@
 /testsprite_tests
 *.backup
 *.backup.php
+/boost.json
+/AGENTS.md
 /vendor
 Homestead.json
 Homestead.yaml

@@ -38,6 +38,7 @@ Isi form dengan:
 | **Region** | Singapore (terdekat) |
 | **Branch** | `main` |
 | **Runtime** | `PHP` |
+| **PHP Version** | **8.3** (atau lebih baru) — wajib karena Pest 4 / PHPUnit 12 butuh PHP ≥ 8.3. Pilih di dropdown saat membuat service. |
 | **Build Command** | Lihat di bawah |
 | **Start Command** | Lihat di bawah |
 | **Instance Type** | **Free** |
