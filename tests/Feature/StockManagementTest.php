@@ -1,23 +1,22 @@
 <?php
 
-use App\Models\User;
 use App\Models\Menu;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Category;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 describe('Stock Management - Comprehensive Tests', function () {
-    
+
     beforeEach(function () {
         $this->admin = User::factory()->create(['role' => 'admin']);
         $this->customer = User::factory()->create(['role' => 'customer']);
     });
 
     // ==================== STOCK INITIALIZATION ====================
-    
+
     test('menu item can be created with initial stock', function () {
         $menu = Menu::factory()->create([
             'name' => 'Nasi Goreng',
@@ -40,7 +39,7 @@ describe('Stock Management - Comprehensive Tests', function () {
     });
 
     // ==================== STOCK AVAILABILITY ====================
-    
+
     test('menu item is available when stock is sufficient', function () {
         $menu = Menu::factory()->create([
             'stock' => 10,
@@ -71,7 +70,7 @@ describe('Stock Management - Comprehensive Tests', function () {
     });
 
     // ==================== STOCK DEDUCTION ====================
-    
+
     test('stock is deducted when order is placed', function () {
         $menu = Menu::factory()->create([
             'stock' => 20,
@@ -96,7 +95,7 @@ describe('Stock Management - Comprehensive Tests', function () {
 
         // Try to order more than available
         $orderQuantity = 10;
-        
+
         // Should check stock before deducting
         if ($menu->stock >= $orderQuantity) {
             $menu->stock -= $orderQuantity;
@@ -129,10 +128,10 @@ describe('Stock Management - Comprehensive Tests', function () {
     });
 
     // ==================== STOCK UPDATES ====================
-    
+
     test('admin can increase stock', function () {
         $this->actingAs($this->admin);
-        
+
         $menu = Menu::factory()->create([
             'stock' => 10,
         ]);
@@ -146,7 +145,7 @@ describe('Stock Management - Comprehensive Tests', function () {
 
     test('admin can decrease stock', function () {
         $this->actingAs($this->admin);
-        
+
         $menu = Menu::factory()->create([
             'stock' => 100,
         ]);
@@ -160,7 +159,7 @@ describe('Stock Management - Comprehensive Tests', function () {
 
     test('admin can set stock to specific value', function () {
         $this->actingAs($this->admin);
-        
+
         $menu = Menu::factory()->create([
             'stock' => 50,
         ]);
@@ -172,7 +171,7 @@ describe('Stock Management - Comprehensive Tests', function () {
     });
 
     // ==================== LOW STOCK DETECTION ====================
-    
+
     test('can detect low stock items', function () {
         // Create items with various stock levels
         Menu::factory()->create(['stock' => 100]); // High stock
@@ -199,7 +198,7 @@ describe('Stock Management - Comprehensive Tests', function () {
     });
 
     // ==================== STOCK VALIDATION ====================
-    
+
     test('order cannot be placed if stock is insufficient', function () {
         $menu = Menu::factory()->create([
             'stock' => 3,
@@ -228,7 +227,7 @@ describe('Stock Management - Comprehensive Tests', function () {
     });
 
     // ==================== STOCK RESTORATION ====================
-    
+
     test('stock is restored when order is cancelled', function () {
         $menu = Menu::factory()->create([
             'stock' => 20,
@@ -250,7 +249,7 @@ describe('Stock Management - Comprehensive Tests', function () {
     });
 
     // ==================== INTEGRATION TESTS ====================
-    
+
     test('complete stock workflow with order', function () {
         // Create menu with stock
         $menu = Menu::factory()->create([
@@ -312,7 +311,7 @@ describe('Stock Management - Comprehensive Tests', function () {
 
         foreach ($orders as $orderData) {
             $quantity = $orderData['quantity'];
-            
+
             // Check stock before deducting
             if ($menu->stock >= $quantity) {
                 $menu->stock -= $quantity;
@@ -334,12 +333,12 @@ describe('Stock Management - Comprehensive Tests', function () {
 
         // Order all stock
         $menu->stock -= 5;
-        
+
         // Auto-disable when stock is 0
         if ($menu->stock <= 0) {
             $menu->is_available = false;
         }
-        
+
         $menu->save();
 
         $menu->refresh();
@@ -364,7 +363,7 @@ describe('Stock Management - Comprehensive Tests', function () {
     });
 
     // ==================== EDGE CASES ====================
-    
+
     test('stock handles large quantities correctly', function () {
         $menu = Menu::factory()->create([
             'stock' => 10000,

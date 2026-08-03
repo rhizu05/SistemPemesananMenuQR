@@ -21,7 +21,7 @@ class VoucherFactory extends Factory
     public function definition(): array
     {
         $type = fake()->randomElement(['percentage', 'fixed_amount']);
-        
+
         return [
             'code' => strtoupper(Str::random(8)),
             'name' => fake()->words(3, true),

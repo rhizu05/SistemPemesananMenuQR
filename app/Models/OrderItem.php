@@ -8,21 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 class OrderItem extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'order_id',
         'menu_id',
         'quantity',
         'price',
-        'special_instructions'
+        'special_instructions',
     ];
-    
+
     // Relasi ke order
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
-    
+
     // Relasi ke menu
     public function menu()
     {

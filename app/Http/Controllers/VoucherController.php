@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Voucher;
-use App\Models\VoucherUsage;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class VoucherController extends Controller
 {
@@ -13,6 +11,7 @@ class VoucherController extends Controller
     public function index()
     {
         $vouchers = Voucher::orderBy('created_at', 'desc')->paginate(20);
+
         return view('admin.vouchers.index', compact('vouchers'));
     }
 
@@ -29,7 +28,7 @@ class VoucherController extends Controller
             \Log::info('Voucher Store Request', [
                 'all_data' => $request->all(),
                 'has_user_type' => $request->has('user_type'),
-                'user_type_value' => $request->input('user_type')
+                'user_type_value' => $request->input('user_type'),
             ]);
 
             $request->validate([
@@ -50,24 +49,26 @@ class VoucherController extends Controller
             $data['code'] = strtoupper($data['code']); // Auto uppercase
             $data['user_type'] = $request->input('user_type', 'registered'); // Get from request or default
             $data['is_active'] = $request->has('is_active');
-            
+
             $voucher = Voucher::create($data);
-            
+
             \Log::info('Voucher Created Successfully', ['voucher_id' => $voucher->id]);
 
             return redirect()->route('admin.vouchers.index')->with('success', 'Voucher berhasil ditambahkan!');
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Voucher Store Validation Error', [
                 'errors' => $e->errors(),
-                'request_data' => $request->all()
+                'request_data' => $request->all(),
             ]);
+
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             \Log::error('Voucher Store Error', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
         }
     }
 
@@ -75,6 +76,7 @@ class VoucherController extends Controller
     public function edit($id)
     {
         $voucher = Voucher::findOrFail($id);
+
         return view('admin.vouchers.edit', compact('voucher'));
     }
 
@@ -86,13 +88,13 @@ class VoucherController extends Controller
                 'id' => $id,
                 'all_data' => $request->all(),
                 'has_user_type' => $request->has('user_type'),
-                'user_type_value' => $request->input('user_type')
+                'user_type_value' => $request->input('user_type'),
             ]);
 
             $voucher = Voucher::findOrFail($id);
 
             $request->validate([
-                'code' => 'required|string|max:50|unique:vouchers,code,' . $id,
+                'code' => 'required|string|max:50|unique:vouchers,code,'.$id,
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'type' => 'required|in:percentage,fixed_amount',
@@ -109,9 +111,9 @@ class VoucherController extends Controller
             $data['code'] = strtoupper($data['code']);
             $data['user_type'] = $request->input('user_type', 'registered'); // Get from request or default
             $data['is_active'] = $request->has('is_active');
-            
+
             $voucher->update($data);
-            
+
             \Log::info('Voucher Updated Successfully', ['voucher_id' => $voucher->id]);
 
             return redirect()->route('admin.vouchers.index')->with('success', 'Voucher berhasil diupdate!');
@@ -119,16 +121,18 @@ class VoucherController extends Controller
             \Log::error('Voucher Update Validation Error', [
                 'id' => $id,
                 'errors' => $e->errors(),
-                'request_data' => $request->all()
+                'request_data' => $request->all(),
             ]);
+
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             \Log::error('Voucher Update Error', [
                 'id' => $id,
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
         }
     }
 
@@ -136,13 +140,14 @@ class VoucherController extends Controller
     public function destroy($id)
     {
         $voucher = Voucher::findOrFail($id);
-        
+
         // Check if voucher has been used
         if ($voucher->used_count > 0) {
             return back()->with('error', 'Tidak dapat menghapus voucher yang sudah pernah digunakan.');
         }
 
         $voucher->delete();
+
         return redirect()->route('admin.vouchers.index')->with('success', 'Voucher berhasil dihapus!');
     }
 
@@ -150,9 +155,10 @@ class VoucherController extends Controller
     public function toggleStatus($id)
     {
         $voucher = Voucher::findOrFail($id);
-        $voucher->update(['is_active' => !$voucher->is_active]);
+        $voucher->update(['is_active' => ! $voucher->is_active]);
 
         $status = $voucher->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
         return back()->with('success', "Voucher berhasil {$status}!");
     }
 
@@ -160,6 +166,7 @@ class VoucherController extends Controller
     public function usageReport($id)
     {
         $voucher = Voucher::with(['usages.user', 'usages.order'])->findOrFail($id);
+
         return view('admin.vouchers.usage-report', compact('voucher'));
     }
 
@@ -167,13 +174,13 @@ class VoucherController extends Controller
     public function customerIndex()
     {
         $user = auth()->user();
-        
+
         $vouchers = Voucher::active()
             ->valid()
             ->available()
-            ->where(function($query) use ($user) {
+            ->where(function ($query) use ($user) {
                 $query->where('user_type', 'all');
-                
+
                 if ($user) {
                     $query->orWhere('user_type', 'registered');
                 }
@@ -182,7 +189,7 @@ class VoucherController extends Controller
             ->get();
 
         // Filter vouchers that user can still use
-        $availableVouchers = $vouchers->filter(function($voucher) use ($user) {
+        $availableVouchers = $vouchers->filter(function ($voucher) use ($user) {
             return $voucher->canBeUsedBy($user ? $user->id : null);
         });
 
@@ -193,10 +200,10 @@ class VoucherController extends Controller
     public function validate(Request $request)
     {
         // Wajib login untuk menggunakan voucher
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return response()->json([
                 'valid' => false,
-                'message' => 'Silakan login terlebih dahulu untuk menggunakan voucher.'
+                'message' => 'Silakan login terlebih dahulu untuk menggunakan voucher.',
             ], 401);
         }
 
@@ -209,39 +216,39 @@ class VoucherController extends Controller
             ->active()
             ->first();
 
-        if (!$voucher) {
+        if (! $voucher) {
             return response()->json([
                 'valid' => false,
-                'message' => 'Kode voucher tidak ditemukan.'
+                'message' => 'Kode voucher tidak ditemukan.',
             ], 404);
         }
 
-        if (!$voucher->isValid()) {
+        if (! $voucher->isValid()) {
             return response()->json([
                 'valid' => false,
-                'message' => 'Voucher sudah tidak berlaku.'
+                'message' => 'Voucher sudah tidak berlaku.',
             ], 400);
         }
 
-        if (!$voucher->isAvailable()) {
+        if (! $voucher->isAvailable()) {
             return response()->json([
                 'valid' => false,
-                'message' => 'Kuota voucher sudah habis.'
+                'message' => 'Kuota voucher sudah habis.',
             ], 400);
         }
 
         $userId = auth()->id();
-        if (!$voucher->canBeUsedBy($userId)) {
+        if (! $voucher->canBeUsedBy($userId)) {
             return response()->json([
                 'valid' => false,
-                'message' => 'Anda sudah mencapai limit penggunaan voucher ini.'
+                'message' => 'Anda sudah mencapai limit penggunaan voucher ini.',
             ], 400);
         }
 
         if ($request->subtotal < $voucher->min_transaction) {
             return response()->json([
                 'valid' => false,
-                'message' => 'Minimal belanja Rp ' . number_format($voucher->min_transaction, 0, ',', '.') . ' untuk menggunakan voucher ini.'
+                'message' => 'Minimal belanja Rp '.number_format($voucher->min_transaction, 0, ',', '.').' untuk menggunakan voucher ini.',
             ], 400);
         }
 

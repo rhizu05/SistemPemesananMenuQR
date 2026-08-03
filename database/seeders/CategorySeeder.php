@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Category;
+use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
@@ -16,27 +16,27 @@ class CategorySeeder extends Seeder
             [
                 'name' => 'Makanan Utama',
                 'description' => 'Menu makanan utama seperti nasi, mie, dan hidangan berat lainnya',
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name' => 'Minuman',
                 'description' => 'Berbagai pilihan minuman segar, kopi, teh, dan jus',
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name' => 'Appetizer',
                 'description' => 'Hidangan pembuka dan camilan ringan',
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name' => 'Dessert',
                 'description' => 'Hidangan penutup manis seperti es krim, kue, dan pudding',
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name' => 'Paket Hemat',
                 'description' => 'Paket bundling makanan dan minuman dengan harga spesial',
-                'is_active' => true
+                'is_active' => true,
             ],
         ];
 

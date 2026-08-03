@@ -1,17 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\QRController;
+use App\Http\Controllers\VoucherController;
+use Illuminate\Support\Facades\Route;
 
 // Routes untuk Admin
 Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::get('/dashboard', [AdminController::class, 'index']);
-    
+
     // Category Routes
     Route::get('/categories', [AdminController::class, 'categories'])->name('admin.categories');
     Route::get('/categories/create', [AdminController::class, 'createCategory'])->name('admin.categories.create');
@@ -19,7 +19,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->g
     Route::get('/categories/{id}/edit', [AdminController::class, 'editCategory'])->name('admin.categories.edit');
     Route::put('/categories/{id}', [AdminController::class, 'updateCategory'])->name('admin.categories.update');
     Route::delete('/categories/{id}', [AdminController::class, 'deleteCategory'])->name('admin.categories.delete');
-    
+
     // Menu Routes
     Route::get('/menu', [AdminController::class, 'menu'])->name('admin.menu');
     Route::get('/menu/create', [AdminController::class, 'createMenu'])->name('admin.menu.create');
@@ -38,14 +38,14 @@ Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->g
     Route::get('/order/{id}/check-status', [AdminController::class, 'checkStatus'])->name('admin.order.check-status');
 
     Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
-    
+
     // POS Routes (admin can operate the cashier POS)
     Route::get('/pos', [AdminController::class, 'showPOS'])->name('admin.pos');
     Route::post('/pos/order', [AdminController::class, 'createPOSOrder'])->name('admin.pos.create-order');
     // QR Code Routes
     Route::get('/qr-codes', [AdminController::class, 'qrCodeManager'])->name('admin.qr-codes');
     Route::get('/qr-codes/table/{tableNumber}', [AdminController::class, 'generateTableQR'])->name('admin.qr-code.table');
-    
+
     // Voucher Routes
     Route::get('/vouchers', [VoucherController::class, 'index'])->name('admin.vouchers.index');
     Route::get('/vouchers/create', [VoucherController::class, 'create'])->name('admin.vouchers.create');
@@ -55,7 +55,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->g
     Route::delete('/vouchers/{id}', [VoucherController::class, 'destroy'])->name('admin.vouchers.destroy');
     Route::patch('/vouchers/{id}/toggle', [VoucherController::class, 'toggleStatus'])->name('admin.vouchers.toggle');
     Route::get('/vouchers/{id}/usage', [VoucherController::class, 'usageReport'])->name('admin.vouchers.usage');
-    
+
     // Customer Management Routes
     Route::get('/customers', [AdminController::class, 'customers'])->name('admin.customers');
     Route::get('/customers/{id}', [AdminController::class, 'customerDetail'])->name('admin.customer.detail');
@@ -67,14 +67,14 @@ Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->g
 Route::prefix('cashier')->middleware(['auth', 'role:cashier', 'prevent_kitchen'])->group(function () {
     Route::get('/', [App\Http\Controllers\CashierController::class, 'dashboard'])->name('cashier.dashboard');
     Route::get('/dashboard', [App\Http\Controllers\CashierController::class, 'dashboard']);
-    
+
     // Orders
     Route::get('/orders', [App\Http\Controllers\CashierController::class, 'orders'])->name('cashier.orders');
-    
+
     // Payments
     Route::get('/payments', [App\Http\Controllers\CashierController::class, 'pendingPayments'])->name('cashier.payments');
     Route::post('/payments/{id}/verify', [App\Http\Controllers\CashierController::class, 'verifyPayment'])->name('cashier.payments.verify');
-    
+
     // POS (reuse admin POS controller logic but cashier view)
     Route::get('/pos', [AdminController::class, 'showPOS'])->name('cashier.pos');
     Route::post('/pos/order', [AdminController::class, 'createPOSOrder'])->name('cashier.pos.create-order');
@@ -106,7 +106,7 @@ Route::middleware(['prevent_kitchen'])->group(function () {
     Route::get('/order/{orderNumber}/status', [CustomerController::class, 'orderStatus'])->name('customer.order.status');
     Route::get('/order/{orderNumber}/success', [CustomerController::class, 'orderSuccess'])->name('customer.order.success');
     Route::get('/orders', [CustomerController::class, 'myOrders'])->name('customer.my-orders');
-    
+
     // Voucher Routes (Guest & Authenticated)
     Route::get('/vouchers', [VoucherController::class, 'customerIndex'])->name('customer.vouchers');
     Route::post('/vouchers/validate', [VoucherController::class, 'validate'])->name('vouchers.validate');

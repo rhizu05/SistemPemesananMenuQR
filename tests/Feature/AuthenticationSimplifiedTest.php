@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 describe('Authentication & Authorization - Simplified', function () {
-    
+
     beforeEach(function () {
         // Create test users
         $this->admin = User::factory()->create([
@@ -34,52 +34,52 @@ describe('Authentication & Authorization - Simplified', function () {
     // Test: Admin can access admin dashboard when authenticated
     test('admin can access admin dashboard when authenticated', function () {
         $this->actingAs($this->admin);
-        
+
         $response = $this->get('/admin/dashboard');
-        
+
         $response->assertStatus(200);
     });
 
     // Test: Cashier can access cashier dashboard when authenticated
     test('cashier can access cashier dashboard when authenticated', function () {
         $this->actingAs($this->cashier);
-        
+
         $response = $this->get('/cashier/dashboard');
-        
+
         $response->assertStatus(200);
     });
 
     // Test: Kitchen can access kitchen dashboard when authenticated
     test('kitchen staff can access kitchen dashboard when authenticated', function () {
         $this->actingAs($this->kitchen);
-        
+
         $response = $this->get('/kitchen/dashboard');
-        
+
         $response->assertStatus(200);
     });
 
     // Test: Admin can access cashier routes (admin is a superuser)
     test('admin can access cashier routes', function () {
         $this->actingAs($this->admin);
-        
+
         $response = $this->get('/cashier/dashboard');
-        
+
         $response->assertStatus(200);
     });
 
     // Test: Cashier cannot access admin routes
     test('cashier cannot access admin routes', function () {
         $this->actingAs($this->cashier);
-        
+
         $response = $this->get('/admin/menu');
-        
+
         $response->assertStatus(403);
     });
 
     // Test: Unauthenticated users are redirected to login
     test('unauthenticated users are redirected to login', function () {
         $response = $this->get('/admin/dashboard');
-        
+
         $response->assertRedirect('/login');
     });
 

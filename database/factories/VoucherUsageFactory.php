@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Order;
+use App\Models\User;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
-use App\Models\User;
-use App\Models\Order;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

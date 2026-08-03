@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Voucher extends Model
 {
@@ -57,30 +57,31 @@ class Voucher extends Model
     public function scopeValid($query)
     {
         $now = Carbon::now();
-        return $query->where(function($q) use ($now) {
-            $q->where(function($subQ) use ($now) {
+
+        return $query->where(function ($q) use ($now) {
+            $q->where(function ($subQ) use ($now) {
                 $subQ->whereNull('valid_from')
-                     ->orWhere('valid_from', '<=', $now);
+                    ->orWhere('valid_from', '<=', $now);
             })
-            ->where(function($subQ) use ($now) {
-                $subQ->whereNull('valid_until')
-                     ->orWhere('valid_until', '>=', $now);
-            });
+                ->where(function ($subQ) use ($now) {
+                    $subQ->whereNull('valid_until')
+                        ->orWhere('valid_until', '>=', $now);
+                });
         });
     }
 
     public function scopeAvailable($query)
     {
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             $q->whereNull('quota')
-              ->orWhereRaw('used_count < quota');
+                ->orWhereRaw('used_count < quota');
         });
     }
 
     // Helpers
     public function isValid()
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 
@@ -108,11 +109,12 @@ class Voucher extends Model
 
     public function canBeUsedBy($userId)
     {
-        if (!$userId) {
+        if (! $userId) {
             // Guest user
             if ($this->user_type === 'registered') {
                 return false;
             }
+
             return true;
         }
 
@@ -132,7 +134,7 @@ class Voucher extends Model
 
         if ($this->type === 'percentage') {
             $discount = $subtotal * ($this->value / 100);
-            
+
             if ($this->max_discount && $discount > $this->max_discount) {
                 $discount = $this->max_discount;
             }
@@ -147,22 +149,23 @@ class Voucher extends Model
     public function getFormattedValueAttribute()
     {
         if ($this->type === 'percentage') {
-            return $this->value . '%';
+            return $this->value.'%';
         }
-        return 'Rp ' . number_format($this->value, 0, ',', '.');
+
+        return 'Rp '.number_format($this->value, 0, ',', '.');
     }
 
     public function getStatusBadgeAttribute()
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return '<span class="badge bg-secondary">Nonaktif</span>';
         }
 
-        if (!$this->isValid()) {
+        if (! $this->isValid()) {
             return '<span class="badge bg-warning">Kadaluarsa</span>';
         }
 
-        if (!$this->isAvailable()) {
+        if (! $this->isAvailable()) {
             return '<span class="badge bg-danger">Habis</span>';
         }
 

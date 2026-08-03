@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Services\FonnteService;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -19,7 +18,7 @@ class AuthController extends Controller
     }
 
     // ==================== ADMIN LOGIN ====================
-    
+
     /**
      * Show admin login form
      */
@@ -56,8 +55,9 @@ class AuthController extends Controller
             // Check if user is customer role
             if ($user->role === 'customer') {
                 Auth::logout();
+
                 return back()->withErrors([
-                    'email' => 'Akun pelanggan tidak dapat login di halaman admin. Silakan login di halaman pelanggan.'
+                    'email' => 'Akun pelanggan tidak dapat login di halaman admin. Silakan login di halaman pelanggan.',
                 ]);
             }
 
@@ -71,7 +71,7 @@ class AuthController extends Controller
     }
 
     // ==================== CUSTOMER LOGIN (OTP) ====================
-    
+
     /**
      * Show customer login form
      */
@@ -105,11 +105,12 @@ class AuthController extends Controller
         $phone = FonnteService::formatPhoneNumber($request->phone);
 
         // Check rate limiting (max 1 OTP per 5 minutes per phone)
-        $lastOTPTime = session('last_otp_' . $phone);
+        $lastOTPTime = session('last_otp_'.$phone);
         if ($lastOTPTime && Carbon::parse($lastOTPTime)->diffInMinutes(now()) < 5) {
             $retryAfter = 5 - Carbon::parse($lastOTPTime)->diffInMinutes(now());
+
             return back()->withErrors([
-                'phone' => "Terlalu banyak permintaan. Coba lagi dalam $retryAfter menit."
+                'phone' => "Terlalu banyak permintaan. Coba lagi dalam $retryAfter menit.",
             ]);
         }
 
@@ -122,7 +123,7 @@ class AuthController extends Controller
             'otp_phone' => $phone,
             'otp_expires_at' => Carbon::now()->addMinutes(5)->toDateTimeString(),
             'otp_sent' => true,
-            'last_otp_' . $phone => now()->toDateTimeString(),
+            'last_otp_'.$phone => now()->toDateTimeString(),
         ]);
 
         // Send OTP via WhatsApp
@@ -132,7 +133,7 @@ class AuthController extends Controller
             return back()->with('success', 'Kode OTP telah dikirim ke WhatsApp Anda!');
         } else {
             return back()->withErrors([
-                'phone' => 'Gagal mengirim OTP. Silakan coba lagi.'
+                'phone' => 'Gagal mengirim OTP. Silakan coba lagi.',
             ]);
         }
     }
@@ -143,7 +144,7 @@ class AuthController extends Controller
     public function clearOTPSession(Request $request)
     {
         session()->forget(['otp_code', 'otp_phone', 'otp_name', 'otp_expires_at', 'otp_sent']);
-        
+
         return response()->json(['success' => true]);
     }
 
@@ -172,31 +173,32 @@ class AuthController extends Controller
         $expiresAt = session('otp_expires_at');
 
         // Check if OTP session exists
-        if (!$sessionOTP || !$sessionPhone || !$expiresAt) {
+        if (! $sessionOTP || ! $sessionPhone || ! $expiresAt) {
             return back()->withErrors([
-                'otp' => 'Sesi OTP tidak ditemukan. Silakan kirim ulang OTP.'
+                'otp' => 'Sesi OTP tidak ditemukan. Silakan kirim ulang OTP.',
             ]);
         }
 
         // Check if OTP expired
         if (Carbon::now()->greaterThan(Carbon::parse($expiresAt))) {
             session()->forget(['otp_code', 'otp_phone', 'otp_name', 'otp_expires_at', 'otp_sent']);
+
             return back()->withErrors([
-                'otp' => 'Kode OTP sudah kadaluarsa. Silakan kirim ulang OTP.'
+                'otp' => 'Kode OTP sudah kadaluarsa. Silakan kirim ulang OTP.',
             ]);
         }
 
         // Verify OTP
         if ($request->otp !== $sessionOTP) {
             return back()->withErrors([
-                'otp' => 'Kode OTP salah. Silakan coba lagi.'
+                'otp' => 'Kode OTP salah. Silakan coba lagi.',
             ]);
         }
 
         // OTP Valid! Find or create user
         $user = User::where('phone', $sessionPhone)->first();
 
-        if (!$user) {
+        if (! $user) {
             // Auto-register new customer
             $user = User::create([
                 'name' => $sessionName,
@@ -221,7 +223,7 @@ class AuthController extends Controller
     }
 
     // ==================== LOGOUT ====================
-    
+
     /**
      * Logout user
      */
@@ -235,7 +237,7 @@ class AuthController extends Controller
     }
 
     // ==================== HELPER METHODS ====================
-    
+
     /**
      * Redirect based on user role
      */

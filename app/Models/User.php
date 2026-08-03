@@ -27,7 +27,7 @@ class User extends Authenticatable
         'phone_verified_at',
         'otp_code',
         'otp_expires_at',
-        'is_active'
+        'is_active',
     ];
 
     /**
@@ -106,6 +106,7 @@ class User extends Authenticatable
         if ($this->role === 'admin') {
             return true;
         }
+
         return $this->role === $role;
     }
 }

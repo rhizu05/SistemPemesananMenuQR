@@ -26,12 +26,12 @@ class OrderFactory extends Factory
         $totalAmount = $subtotal - $discountAmount;
 
         return [
-            'order_number' => 'ORD-' . strtoupper(Str::random(8)),
+            'order_number' => 'ORD-'.strtoupper(Str::random(8)),
             'user_id' => User::factory(),
             'status' => fake()->randomElement(['pending', 'preparing', 'ready', 'completed', 'cancelled']),
             'total_amount' => $totalAmount,
             'customer_name' => fake()->name(),
-            'customer_phone' => '08' . fake()->numerify('##########'),
+            'customer_phone' => '08'.fake()->numerify('##########'),
             'table_number' => fake()->numberBetween(1, 20),
             'order_type' => fake()->randomElement(['dine-in', 'takeaway']),
             'special_requests' => fake()->optional()->sentence(),

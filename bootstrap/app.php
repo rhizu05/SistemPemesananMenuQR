@@ -11,9 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Trust Proxies untuk Ngrok
-        $middleware->trustProxies(at: '*');
-        
+        // Trusted proxies (Ngrok, Render, dsb.) - batasi via TRUSTED_PROXIES di .env
+        $middleware->trustProxies(at: explode(',', env('TRUSTED_PROXIES', '*')));
+
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'prevent_kitchen' => \App\Http\Middleware\PreventKitchenAccess::class,

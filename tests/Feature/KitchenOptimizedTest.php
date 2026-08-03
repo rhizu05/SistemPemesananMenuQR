@@ -1,13 +1,13 @@
 <?php
 
-use App\Models\User;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 describe('Kitchen Features - Optimized', function () {
-    
+
     beforeEach(function () {
         $this->kitchen = User::factory()->create([
             'name' => 'Kitchen Staff',
@@ -20,7 +20,7 @@ describe('Kitchen Features - Optimized', function () {
 
     test('kitchen can view dashboard', function () {
         $response = $this->get('/kitchen/dashboard');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('kitchen.dashboard');
     });
@@ -33,7 +33,7 @@ describe('Kitchen Features - Optimized', function () {
         ]);
 
         $response = $this->get('/kitchen/dashboard');
-        
+
         $response->assertStatus(200);
         $response->assertViewHas('preparingOrders');
     });
@@ -50,7 +50,7 @@ describe('Kitchen Features - Optimized', function () {
 
         $response->assertStatus(200);
         $response->assertJson(['success' => true]);
-        
+
         $order->refresh();
         expect($order->status)->toBe('preparing');
     });
@@ -67,29 +67,29 @@ describe('Kitchen Features - Optimized', function () {
 
         $response->assertStatus(200);
         $response->assertJson(['success' => true]);
-        
+
         $order->refresh();
         expect($order->status)->toBe('ready');
     });
 
     test('kitchen cannot access admin routes', function () {
         $response = $this->get('/admin/menu');
-        
+
         $response->assertStatus(403);
     });
 
     test('kitchen cannot access cashier routes', function () {
         $response = $this->get('/cashier/pos');
-        
+
         $response->assertStatus(403);
     });
 
     test('non-kitchen cannot access kitchen dashboard', function () {
         $cashier = User::factory()->create(['role' => 'cashier']);
         $this->actingAs($cashier);
-        
+
         $response = $this->get('/kitchen/dashboard');
-        
+
         $response->assertStatus(403);
     });
 });

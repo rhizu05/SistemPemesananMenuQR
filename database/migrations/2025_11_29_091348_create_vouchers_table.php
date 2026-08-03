@@ -28,7 +28,7 @@ return new class extends Migration
             $table->dateTime('valid_until')->nullable()->comment('Berlaku sampai');
             $table->boolean('is_active')->default(true)->comment('Status aktif/nonaktif');
             $table->timestamps();
-            
+
             // Index
             $table->index('code');
             $table->index('is_active');

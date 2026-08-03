@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Menu;
 use App\Models\Category;
+use App\Models\Menu;
 use App\Models\Order;
 use App\Models\OrderItem;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class CustomerController extends Controller
@@ -26,10 +26,10 @@ class CustomerController extends Controller
             ->orderBy('category_id')
             ->orderBy('name')
             ->get();
-        
+
         // Get table number from QR Code scan and save to session
         $tableNumber = $request->query('table');
-        
+
         if ($tableNumber) {
             session(['table_number' => $tableNumber]);
         } else {
@@ -50,6 +50,7 @@ class CustomerController extends Controller
     {
         // Hapus session nomor meja saat masuk halaman scan
         session()->forget('table_number');
+
         return view('customer.scan-qr');
     }
 
@@ -58,11 +59,11 @@ class CustomerController extends Controller
     {
         $request->validate([
             'menu_id' => 'required|exists:menus,id',
-            'quantity' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $menu = Menu::findOrFail($request->menu_id);
-        
+
         // Cek stok
         $cart = session()->get('cart', []);
         $currentQtyInCart = isset($cart[$request->menu_id]) ? $cart[$request->menu_id]['quantity'] : 0;
@@ -71,12 +72,12 @@ class CustomerController extends Controller
         if ($menu->stock < $requestedTotal) {
             return response()->json([
                 'success' => false,
-                'message' => 'Stok tidak mencukupi (Tersedia: ' . $menu->stock . ', di Keranjang: ' . $currentQtyInCart . ')'
+                'message' => 'Stok tidak mencukupi (Tersedia: '.$menu->stock.', di Keranjang: '.$currentQtyInCart.')',
             ], 400);
         }
 
         $cart = session()->get('cart', []);
-        
+
         if (isset($cart[$request->menu_id])) {
             $cart[$request->menu_id]['quantity'] += $request->quantity;
         } else {
@@ -85,18 +86,18 @@ class CustomerController extends Controller
                 'name' => $menu->name,
                 'price' => $menu->price,
                 'quantity' => $request->quantity,
-                'image' => $menu->image
+                'image' => $menu->image,
             ];
         }
-        
+
         session()->put('cart', $cart);
-        
+
         $totalItems = array_sum(array_column($cart, 'quantity'));
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Menu berhasil ditambahkan ke keranjang',
-            'total_items' => $totalItems
+            'total_items' => $totalItems,
         ]);
     }
 
@@ -105,25 +106,25 @@ class CustomerController extends Controller
     {
         $request->validate([
             'menu_id' => 'required|exists:menus,id',
-            'quantity' => 'required|integer|min:0'
+            'quantity' => 'required|integer|min:0',
         ]);
 
         $cart = session()->get('cart', []);
-        
+
         if ($request->quantity == 0) {
             unset($cart[$request->menu_id]);
         } else {
             $menu = Menu::find($request->menu_id);
-            if (!$menu) {
+            if (! $menu) {
                 return response()->json(['success' => false, 'message' => 'Menu tidak ditemukan'], 404);
             }
 
             if ($menu->stock < $request->quantity) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Stok tidak mencukupi (Tersedia: ' . $menu->stock . ')',
+                    'message' => 'Stok tidak mencukupi (Tersedia: '.$menu->stock.')',
                     'current_qty' => isset($cart[$request->menu_id]) ? $cart[$request->menu_id]['quantity'] : $menu->stock,
-                    'max_stock' => $menu->stock
+                    'max_stock' => $menu->stock,
                 ], 400);
             }
 
@@ -131,9 +132,9 @@ class CustomerController extends Controller
                 $cart[$request->menu_id]['quantity'] = $request->quantity;
             }
         }
-        
+
         session()->put('cart', $cart);
-        
+
         // Calculate totals
         $totalItems = 0;
         $cartSubtotal = 0;
@@ -167,7 +168,7 @@ class CustomerController extends Controller
         }
 
         $cartTotal = $cartSubtotal - $discount;
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Keranjang berhasil diupdate',
@@ -176,7 +177,7 @@ class CustomerController extends Controller
             'cart_total' => $cartTotal,
             'discount_amount' => $discount,
             'total_items' => $totalItems,
-            'voucher_removed' => ($appliedVoucher === null && session()->has('applied_voucher_code')) // Flag if voucher was removed
+            'voucher_removed' => ($appliedVoucher === null && session()->has('applied_voucher_code')), // Flag if voucher was removed
         ]);
     }
 
@@ -184,15 +185,15 @@ class CustomerController extends Controller
     public function removeFromCart($menuId)
     {
         $cart = session()->get('cart', []);
-        
+
         if (isset($cart[$menuId])) {
             unset($cart[$menuId]);
             session()->put('cart', $cart);
         }
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Item berhasil dihapus dari keranjang'
+            'message' => 'Item berhasil dihapus dari keranjang',
         ]);
     }
 
@@ -200,31 +201,31 @@ class CustomerController extends Controller
     public function clearCart()
     {
         session()->forget('cart');
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Keranjang berhasil dikosongkan'
+            'message' => 'Keranjang berhasil dikosongkan',
         ]);
     }
-    
+
     // Method untuk update notes item di keranjang
     public function updateItemNotes(Request $request)
     {
         $request->validate([
             'menu_id' => 'required',
-            'notes' => 'nullable|string|max:255'
+            'notes' => 'nullable|string|max:255',
         ]);
-        
+
         $cart = session()->get('cart', []);
-        
+
         if (isset($cart[$request->menu_id])) {
             $cart[$request->menu_id]['notes'] = $request->notes;
             session()->put('cart', $cart);
         }
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Catatan berhasil disimpan'
+            'message' => 'Catatan berhasil disimpan',
         ]);
     }
 
@@ -232,38 +233,38 @@ class CustomerController extends Controller
     public function cart(Request $request)
     {
         $cart = session()->get('cart', []);
-        
+
         // Calculate subtotal
         $total = 0;
         foreach ($cart as $item) {
             $total += $item['price'] * $item['quantity'];
         }
-        
+
         // Handle voucher application
         if ($request->has('apply_voucher')) {
             // Check if user is logged in
-            if (!auth()->check()) {
+            if (! auth()->check()) {
                 return redirect()->route('login')
                     ->with('error', 'Anda harus login terlebih dahulu untuk menggunakan voucher.')
                     ->with('intended', route('customer.cart'));
             }
-            
+
             $code = strtoupper($request->get('apply_voucher'));
             $voucher = \App\Models\Voucher::where('code', $code)
                 ->active()
                 ->valid()
                 ->available()
                 ->first();
-            
+
             if ($voucher) {
                 $userId = auth()->id();
-                
+
                 // Check if user can use this voucher
                 if ($voucher->canBeUsedBy($userId)) {
                     // Check minimum transaction
                     if ($total >= $voucher->min_transaction) {
                         $discount = $voucher->calculateDiscount($total);
-                        
+
                         session([
                             'applied_voucher' => [
                                 'id' => $voucher->id,
@@ -273,10 +274,10 @@ class CustomerController extends Controller
                             ],
                             'applied_voucher_code' => $voucher->code,
                         ]);
-                        
+
                         return redirect()->route('customer.cart')->with('success', 'Voucher berhasil diterapkan!');
                     } else {
-                        return redirect()->route('customer.cart')->with('error', 'Minimal belanja Rp ' . number_format($voucher->min_transaction, 0, ',', '.') . ' untuk menggunakan voucher ini.');
+                        return redirect()->route('customer.cart')->with('error', 'Minimal belanja Rp '.number_format($voucher->min_transaction, 0, ',', '.').' untuk menggunakan voucher ini.');
                     }
                 } else {
                     return redirect()->route('customer.cart')->with('error', 'Anda sudah mencapai limit penggunaan voucher ini.');
@@ -285,13 +286,14 @@ class CustomerController extends Controller
                 return redirect()->route('customer.cart')->with('error', 'Kode voucher tidak valid atau sudah tidak berlaku.');
             }
         }
-        
-        // Handle voucher removal  
+
+        // Handle voucher removal
         if ($request->has('remove_voucher')) {
             session()->forget(['applied_voucher', 'applied_voucher_code']);
+
             return redirect()->route('customer.cart')->with('success', 'Voucher dihapus.');
         }
-        
+
         return view('customer.cart', compact('cart', 'total'));
     }
 
@@ -306,21 +308,21 @@ class CustomerController extends Controller
             'special_requests' => 'nullable|string',
             'item_notes' => 'nullable|array',
             'item_notes.*' => 'nullable|string|max:255',
-            'payment_method' => 'required|in:cash,qris'
+            'payment_method' => 'required|in:cash,qris',
         ]);
 
         // Ambil cart dari session
         $cart = session()->get('cart', []);
-        
+
         if (empty($cart)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Keranjang kosong'
+                'message' => 'Keranjang kosong',
             ], 400);
         }
 
         // Buat nomor pesanan unik
-        $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+        $orderNumber = 'ORD-'.date('Ymd').'-'.strtoupper(Str::random(6));
 
         // Hitung total jumlah dan siapkan item details untuk Midtrans
         $totalAmount = 0;
@@ -328,12 +330,12 @@ class CustomerController extends Controller
 
         foreach ($cart as $item) {
             $totalAmount += $item['price'] * $item['quantity'];
-            
+
             $midtransItems[] = [
                 'id' => $item['menu_id'],
                 'price' => $item['price'],
                 'quantity' => $item['quantity'],
-                'name' => substr($item['name'], 0, 50)
+                'name' => substr($item['name'], 0, 50),
             ];
         }
 
@@ -341,23 +343,23 @@ class CustomerController extends Controller
         $voucher = null;
         $discount = 0;
         $subtotal = $totalAmount; // Store original amount
-        
+
         $appliedVoucher = session('applied_voucher');
         if ($appliedVoucher) {
             $voucher = \App\Models\Voucher::find($appliedVoucher['id']);
-            
+
             if ($voucher && $voucher->isValid() && $voucher->isAvailable()) {
                 $userId = auth()->id();
-                
+
                 if ($voucher->canBeUsedBy($userId)) {
                     $discount = $appliedVoucher['discount'];
                     $totalAmount = $subtotal - $discount; // Apply discount to final amount
-                    
+
                     \Log::info('Voucher applied to order', [
                         'voucher_code' => $voucher->code,
                         'subtotal' => $subtotal,
                         'discount' => $discount,
-                        'total' => $totalAmount
+                        'total' => $totalAmount,
                     ]);
                 }
             }
@@ -366,10 +368,10 @@ class CustomerController extends Controller
         // Add voucher discount as negative item for Midtrans
         if ($voucher && $discount > 0) {
             $midtransItems[] = [
-                'id' => 'VOUCHER-' . $voucher->code,
+                'id' => 'VOUCHER-'.$voucher->code,
                 'price' => -$discount,
                 'quantity' => 1,
-                'name' => 'Diskon Voucher ' . $voucher->code
+                'name' => 'Diskon Voucher '.$voucher->code,
             ];
         }
 
@@ -380,7 +382,7 @@ class CustomerController extends Controller
         if ($request->payment_method === 'qris') {
             try {
                 $this->configureMidtrans();
-                
+
                 $params = [
                     'payment_type' => 'qris',
                     'transaction_details' => [
@@ -395,11 +397,11 @@ class CustomerController extends Controller
                     'custom_expiry' => [
                         'expiry_duration' => 15,
                         'unit' => 'minute',
-                    ]
+                    ],
                 ];
-                
+
                 $response = \Midtrans\CoreApi::charge($params);
-                
+
                 // Ambil URL QR Code
                 if (isset($response->actions)) {
                     foreach ($response->actions as $action) {
@@ -410,10 +412,11 @@ class CustomerController extends Controller
                     }
                 }
             } catch (\Exception $e) {
-                \Log::error('Midtrans Error: ' . $e->getMessage());
+                \Log::error('Midtrans Error: '.$e->getMessage());
+
                 return response()->json([
-                    'success' => false, 
-                    'message' => 'Gagal memproses QRIS: ' . $e->getMessage()
+                    'success' => false,
+                    'message' => 'Gagal memproses QRIS: '.$e->getMessage(),
                 ], 500);
             }
         }
@@ -421,11 +424,12 @@ class CustomerController extends Controller
         // Check stock availability BEFORE creating anything
         foreach ($cart as $menuId => $item) {
             $menu = Menu::find($item['menu_id']);
-            if (!$menu || $menu->stock < $item['quantity']) {
+            if (! $menu || $menu->stock < $item['quantity']) {
                 $available = $menu ? $menu->stock : 0;
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Stok untuk menu "' . $item['name'] . '" tidak mencukupi. Tersedia: ' . $available
+                    'message' => 'Stok untuk menu "'.$item['name'].'" tidak mencukupi. Tersedia: '.$available,
                 ], 400);
             }
         }
@@ -447,7 +451,7 @@ class CustomerController extends Controller
             'special_requests' => $request->special_requests,
             'payment_status' => $paymentStatus,
             'payment_method' => $request->payment_method,
-            'snap_token' => $qrisUrl // Simpan URL QRIS di kolom snap_token sementara (atau buat kolom baru jika perlu)
+            'snap_token' => $qrisUrl, // Simpan URL QRIS di kolom snap_token sementara (atau buat kolom baru jika perlu)
         ]);
 
         // Buat item pesanan
@@ -457,11 +461,12 @@ class CustomerController extends Controller
             // Re-check stock atomically (optimistic locking pattern or strict check)
             if ($menu->stock < $item['quantity']) {
                 // If race condition happens here, we should rollback order
-                $order->delete(); 
+                $order->delete();
+
                 // Restore previous items if needed (not implemented here as loop breaks)
                 return response()->json([
                     'success' => false,
-                    'message' => 'Stok menu "' . $menu->name . '" baru saja habis diambil pelanggan lain.'
+                    'message' => 'Stok menu "'.$menu->name.'" baru saja habis diambil pelanggan lain.',
                 ], 400);
             }
 
@@ -470,7 +475,7 @@ class CustomerController extends Controller
                 'menu_id' => $item['menu_id'],
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
-                'special_instructions' => $item['notes'] ?? null // Ambil notes dari cart session
+                'special_instructions' => $item['notes'] ?? null, // Ambil notes dari cart session
             ]);
 
             // Update stok menu
@@ -485,10 +490,10 @@ class CustomerController extends Controller
                 'order_id' => $order->id,
                 'discount_amount' => $discount,
             ]);
-            
+
             // Increment voucher used count
             $voucher->increment('used_count');
-            
+
             \Log::info('Voucher usage recorded', [
                 'voucher_code' => $voucher->code,
                 'order_number' => $orderNumber,
@@ -497,7 +502,7 @@ class CustomerController extends Controller
         }
 
         // Simpan order number ke session untuk guest
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             $guestOrders = session()->get('guest_orders', []);
             $guestOrders[] = $orderNumber;
             session()->put('guest_orders', $guestOrders);
@@ -511,7 +516,7 @@ class CustomerController extends Controller
             'message' => 'Pesanan berhasil dibuat',
             'order_number' => $orderNumber,
             'payment_method' => $request->payment_method,
-            'qris_url' => $qrisUrl
+            'qris_url' => $qrisUrl,
         ]);
     }
 
@@ -519,25 +524,25 @@ class CustomerController extends Controller
     public function orderStatus($orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)->with('orderItems.menu')->firstOrFail();
-        
+
         // Check for QRIS expiration manually if still pending
         if ($order->payment_method === 'qris' && $order->payment_status === 'pending') {
             // 15 minutes expiration
             $expiredTime = $order->created_at->addMinutes(15);
-            
+
             if (now()->greaterThan($expiredTime)) {
                 $order->update([
                     'status' => 'cancelled',
-                    'payment_status' => 'failed'
+                    'payment_status' => 'failed',
                 ]);
-                
+
                 // Restore stock
                 foreach ($order->orderItems as $item) {
                     $item->menu->increment('stock', $item->quantity);
                 }
             }
         }
-        
+
         return view('customer.order-status', compact('order'));
     }
 
@@ -545,9 +550,9 @@ class CustomerController extends Controller
     public function orderSuccess($orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
         return view('customer.order-success', compact('order'));
     }
-
 
     // Method untuk menampilkan daftar pesanan pelanggan
     public function myOrders()
@@ -561,18 +566,18 @@ class CustomerController extends Controller
         } else {
             // Guest: tampilkan hanya riwayat dari session saat ini
             $sessionOrders = session()->get('guest_orders', []);
-            
+
             // Check expiration for all pending QRIS orders in the list
             $ordersToCheck = Order::whereIn('order_number', $sessionOrders)
                 ->where('payment_method', 'qris')
                 ->where('payment_status', 'pending')
                 ->get();
-                
+
             foreach ($ordersToCheck as $order) {
                 if (now()->greaterThan($order->created_at->addMinutes(15))) {
                     $order->update([
                         'status' => 'cancelled',
-                        'payment_status' => 'failed'
+                        'payment_status' => 'failed',
                     ]);
                     // Restore stock
                     foreach ($order->orderItems as $item) {
@@ -594,6 +599,7 @@ class CustomerController extends Controller
     public function profile()
     {
         $user = auth()->user();
+
         return view('customer.profile', compact('user'));
     }
 
@@ -604,17 +610,17 @@ class CustomerController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:500'
+            'address' => 'nullable|string|max:500',
         ]);
-        
+
         \Log::info('Update Profile Request', [
             'user_id' => $user->id,
-            'request_all' => $request->all()
+            'request_all' => $request->all(),
         ]);
 
         $updated = $user->update([
             'name' => $request->name,
-            'address' => $request->address
+            'address' => $request->address,
         ]);
 
         \Log::info('Profile Updated Status', ['success' => $updated]);

@@ -1,26 +1,26 @@
 <?php
 
+use App\Models\Order;
 use App\Models\User;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
-use App\Models\Order;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 describe('Voucher System - Comprehensive Tests', function () {
-    
+
     beforeEach(function () {
         $this->admin = User::factory()->create(['role' => 'admin']);
         $this->customer = User::factory()->create(['role' => 'customer']);
     });
 
     // ==================== VOUCHER CREATION ====================
-    
+
     test('admin can create percentage voucher', function () {
         $this->actingAs($this->admin);
-        
+
         $voucher = Voucher::factory()->create([
             'code' => 'DISKON20',
             'type' => 'percentage',
@@ -37,7 +37,7 @@ describe('Voucher System - Comprehensive Tests', function () {
 
     test('admin can create fixed amount voucher', function () {
         $this->actingAs($this->admin);
-        
+
         $voucher = Voucher::factory()->create([
             'code' => 'HEMAT5K',
             'type' => 'fixed_amount',
@@ -50,7 +50,7 @@ describe('Voucher System - Comprehensive Tests', function () {
     });
 
     // ==================== VOUCHER VALIDATION ====================
-    
+
     test('voucher is valid when active and within date range', function () {
         $voucher = Voucher::factory()->create([
             'is_active' => true,
@@ -90,7 +90,7 @@ describe('Voucher System - Comprehensive Tests', function () {
     });
 
     // ==================== VOUCHER AVAILABILITY ====================
-    
+
     test('voucher is available when quota not reached', function () {
         $voucher = Voucher::factory()->create([
             'quota' => 100,
@@ -119,7 +119,7 @@ describe('Voucher System - Comprehensive Tests', function () {
     });
 
     // ==================== DISCOUNT CALCULATION ====================
-    
+
     test('percentage voucher calculates discount correctly', function () {
         $voucher = Voucher::factory()->create([
             'type' => 'percentage',
@@ -129,7 +129,7 @@ describe('Voucher System - Comprehensive Tests', function () {
         ]);
 
         $discount = $voucher->calculateDiscount(100000);
-        
+
         expect($discount)->toBe(20000.0); // 20% of 100000
     });
 
@@ -142,7 +142,7 @@ describe('Voucher System - Comprehensive Tests', function () {
         ]);
 
         $discount = $voucher->calculateDiscount(100000);
-        
+
         // 20% of 100000 = 20000, but max is 15000
         expect($discount)->toBe(15000.0);
     });
@@ -155,7 +155,7 @@ describe('Voucher System - Comprehensive Tests', function () {
         ]);
 
         $discount = $voucher->calculateDiscount(30000);
-        
+
         expect($discount)->toBe(0.0);
     });
 
@@ -167,7 +167,7 @@ describe('Voucher System - Comprehensive Tests', function () {
         ]);
 
         $discount = $voucher->calculateDiscount(100000);
-        
+
         expect($discount)->toBe(10000.0);
     });
 
@@ -179,13 +179,13 @@ describe('Voucher System - Comprehensive Tests', function () {
         ]);
 
         $discount = $voucher->calculateDiscount(8000);
-        
+
         // Discount should be limited to subtotal
         expect($discount)->toBe(8000.0);
     });
 
     // ==================== USER LIMIT ====================
-    
+
     test('voucher can be used by user within limit', function () {
         $voucher = Voucher::factory()->create([
             'user_limit' => 3,
@@ -215,7 +215,7 @@ describe('Voucher System - Comprehensive Tests', function () {
     });
 
     // ==================== USER TYPE RESTRICTION ====================
-    
+
     test('registered-only voucher cannot be used by guest', function () {
         $voucher = Voucher::factory()->create([
             'user_type' => 'registered',
@@ -233,7 +233,7 @@ describe('Voucher System - Comprehensive Tests', function () {
     });
 
     // ==================== VOUCHER USAGE TRACKING ====================
-    
+
     test('voucher usage is tracked correctly', function () {
         $voucher = Voucher::factory()->create([
             'used_count' => 0,
@@ -253,7 +253,7 @@ describe('Voucher System - Comprehensive Tests', function () {
     });
 
     // ==================== SCOPE TESTS ====================
-    
+
     test('active scope returns only active vouchers', function () {
         Voucher::factory()->create(['is_active' => true]);
         Voucher::factory()->create(['is_active' => true]);
@@ -301,7 +301,7 @@ describe('Voucher System - Comprehensive Tests', function () {
     });
 
     // ==================== INTEGRATION TESTS ====================
-    
+
     test('complete voucher workflow works correctly', function () {
         // Create voucher
         $voucher = Voucher::factory()->create([

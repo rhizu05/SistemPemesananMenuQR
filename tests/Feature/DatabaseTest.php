@@ -1,16 +1,16 @@
 <?php
 
-use App\Models\User;
-use App\Models\Menu;
 use App\Models\Category;
+use App\Models\Menu;
 use App\Models\Order;
+use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 describe('Database and Factories', function () {
-    
+
     test('can create user with factory', function () {
         $user = User::factory()->create([
             'role' => 'admin',

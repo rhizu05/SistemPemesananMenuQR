@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Menu;
 use App\Models\Category;
+use App\Models\Menu;
 use App\Models\Order;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
@@ -22,19 +22,20 @@ class AdminController extends Controller
     }
 
     // ========== CATEGORY MANAGEMENT ==========
-    
+
     // Menampilkan daftar kategori
     public function categories(Request $request)
     {
         $query = Category::withCount('menus');
-        
+
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                ->orWhere('description', 'like', "%{$search}%");
         }
-        
+
         $categories = $query->get();
+
         return view('admin.categories', compact('categories'));
     }
 
@@ -49,7 +50,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:categories,name',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $data = $request->all();
@@ -64,6 +65,7 @@ class AdminController extends Controller
     public function editCategory($id)
     {
         $category = Category::withCount('menus')->findOrFail($id);
+
         return view('admin.category-edit', compact('category'));
     }
 
@@ -73,8 +75,8 @@ class AdminController extends Controller
         $category = Category::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $id,
-            'description' => 'nullable|string'
+            'name' => 'required|string|max:255|unique:categories,name,'.$id,
+            'description' => 'nullable|string',
         ]);
 
         $data = $request->all();
@@ -104,17 +106,18 @@ class AdminController extends Controller
     public function menu(Request $request)
     {
         $query = Menu::with('category');
-        
+
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('category', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhereHas('category', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
         }
-        
+
         $menus = $query->get();
+
         return view('admin.menu', compact('menus'));
     }
 
@@ -122,6 +125,7 @@ class AdminController extends Controller
     public function createMenu()
     {
         $categories = Category::where('is_active', true)->get();
+
         return view('admin.menu-create', compact('categories'));
     }
 
@@ -135,7 +139,7 @@ class AdminController extends Controller
             'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_available' => 'boolean',
-            'stock' => 'required|integer|min:0'
+            'stock' => 'required|integer|min:0',
         ]);
 
         $data = $request->all();
@@ -156,6 +160,7 @@ class AdminController extends Controller
     {
         $menu = Menu::findOrFail($id);
         $categories = Category::where('is_active', true)->get();
+
         return view('admin.menu-edit', compact('menu', 'categories'));
     }
 
@@ -171,7 +176,7 @@ class AdminController extends Controller
             'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_available' => 'boolean',
-            'stock' => 'required|integer|min:0'
+            'stock' => 'required|integer|min:0',
         ]);
 
         $data = $request->all();
@@ -180,7 +185,7 @@ class AdminController extends Controller
         if ($request->hasFile('image')) {
             // Hapus gambar lama jika ada
             if ($menu->image) {
-                \Storage::delete('public/' . $menu->image);
+                \Storage::delete('public/'.$menu->image);
             }
 
             $imagePath = $request->file('image')->store('menu-images', 'public');
@@ -200,7 +205,7 @@ class AdminController extends Controller
         $menu = Menu::findOrFail($id);
 
         if ($menu->image) {
-            \Storage::delete('public/' . $menu->image);
+            \Storage::delete('public/'.$menu->image);
         }
 
         $menu->delete();
@@ -215,12 +220,12 @@ class AdminController extends Controller
         $ordersToCheck = Order::where('payment_method', 'qris')
             ->where('payment_status', 'pending')
             ->get();
-            
+
         foreach ($ordersToCheck as $order) {
             if (now()->greaterThan($order->created_at->addMinutes(15))) {
                 $order->update([
                     'status' => 'cancelled',
-                    'payment_status' => 'failed'
+                    'payment_status' => 'failed',
                 ]);
                 // Restore stock
                 foreach ($order->orderItems as $item) {
@@ -231,6 +236,7 @@ class AdminController extends Controller
 
         $orders = Order::with('user', 'orderItems.menu')->orderBy('created_at', 'desc')->paginate(10);
         $totalOrders = Order::count(); // Hitung semua pesanan, bukan hanya yang di-paginate
+
         return view('admin.orders', compact('orders', 'totalOrders'));
     }
 
@@ -238,6 +244,7 @@ class AdminController extends Controller
     public function orderDetail($id)
     {
         $order = Order::with('user', 'orderItems.menu')->findOrFail($id);
+
         return view('admin.order-detail', compact('order'));
     }
 
@@ -245,7 +252,7 @@ class AdminController extends Controller
     public function updateOrderStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,confirmed,preparing,ready,delivered,cancelled'
+            'status' => 'required|in:pending,confirmed,preparing,ready,delivered,cancelled',
         ]);
 
         $order = Order::findOrFail($id);
@@ -274,17 +281,17 @@ class AdminController extends Controller
             'payment_status' => $request->payment_status,
             'payment_method' => $request->payment_method,
             'amount_paid' => $request->amount_paid,
-            'total_amount' => $order->total_amount
+            'total_amount' => $order->total_amount,
         ]);
 
         $request->validate([
             'payment_status' => 'required|in:paid,failed',
             'payment_method' => 'nullable|string',
-            'amount_paid' => 'nullable|numeric|min:0'
+            'amount_paid' => 'nullable|numeric|min:0',
         ]);
 
         $updateData = [
-            'payment_status' => $request->payment_status
+            'payment_status' => $request->payment_status,
         ];
 
         if ($request->payment_status === 'paid') {
@@ -297,11 +304,11 @@ class AdminController extends Controller
                 $amountPaid = $request->amount_paid;
                 $updateData['amount_paid'] = $amountPaid;
                 $updateData['change_amount'] = max(0, $amountPaid - $order->total_amount);
-                
+
                 \Log::info('Calculated change:', [
                     'amount_paid' => $amountPaid,
                     'total_amount' => $order->total_amount,
-                    'change_amount' => $updateData['change_amount']
+                    'change_amount' => $updateData['change_amount'],
                 ]);
             }
 
@@ -314,7 +321,6 @@ class AdminController extends Controller
         $order->update($updateData);
 
         \Log::info('Order updated:', ['order_id' => $id, 'update_data' => $updateData]);
-
 
         // Broadcast event untuk real-time update (jika ada)
         // \App\Events\OrderStatusUpdated::dispatch($order);
@@ -334,40 +340,40 @@ class AdminController extends Controller
         $order = Order::where('id', $id)
             ->with(['orderItems.menu', 'user'])
             ->first();
-        
-        if (!$order) {
+
+        if (! $order) {
             abort(404, 'Order tidak ditemukan');
         }
-        
+
         // Log data untuk debugging
         \Log::info('Print Receipt - Order Data:', [
             'order_id' => $order->id,
             'total_amount' => $order->total_amount,
             'amount_paid' => $order->amount_paid,
             'change_amount' => $order->change_amount,
-            'payment_status' => $order->payment_status
+            'payment_status' => $order->payment_status,
         ]);
-        
+
         return view('admin.receipt', compact('order'));
     }
 
     // ========== POS (POINT OF SALE) ==========
-    
+
     // Menampilkan halaman POS untuk admin
     public function showPOS()
     {
-        $categories = Category::where('is_active', true)->with(['menus' => function($query) {
+        $categories = Category::where('is_active', true)->with(['menus' => function ($query) {
             $query->where('is_available', true)->where('stock', '>', 0);
         }])->get();
-        
+
         $menus = Menu::where('is_available', true)
             ->where('stock', '>', 0)
             ->with('category')
             ->get();
-        
+
         return view('cashier.pos', compact('categories', 'menus'));
     }
-    
+
     // Konfigurasi Midtrans
     private function configureMidtrans()
     {
@@ -392,25 +398,25 @@ class AdminController extends Controller
                 'items.*.quantity' => 'required|integer|min:1',
                 'items.*.notes' => 'nullable|string|max:255',
                 'payment_method' => 'required|in:cash,card,qris',
-                'amount_paid' => 'nullable|numeric|min:0'
+                'amount_paid' => 'nullable|numeric|min:0',
             ]);
 
             // Buat nomor pesanan unik
-            $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(\Str::random(6));
+            $orderNumber = 'ORD-'.date('Ymd').'-'.strtoupper(\Str::random(6));
 
             // Hitung total dan siapkan item details untuk Midtrans
             $totalAmount = 0;
             $midtransItems = [];
-            
+
             foreach ($request->items as $item) {
                 $menu = Menu::findOrFail($item['menu_id']);
                 $totalAmount += $menu->price * $item['quantity'];
-                
+
                 $midtransItems[] = [
                     'id' => $menu->id,
                     'price' => $menu->price,
                     'quantity' => $item['quantity'],
-                    'name' => substr($menu->name, 0, 50)
+                    'name' => substr($menu->name, 0, 50),
                 ];
             }
 
@@ -426,13 +432,13 @@ class AdminController extends Controller
                 // Integrasi Midtrans QRIS
                 try {
                     $this->configureMidtrans();
-                    
+
                     // DEBUG: Log server key (partial)
                     $serverKey = config('services.midtrans.server_key');
                     \Log::info('Midtrans Config Check', [
-                        'server_key_exists' => !empty($serverKey),
-                        'server_key_prefix' => substr($serverKey, 0, 5) . '...',
-                        'is_production' => config('services.midtrans.is_production')
+                        'server_key_exists' => ! empty($serverKey),
+                        'server_key_prefix' => substr($serverKey, 0, 5).'...',
+                        'is_production' => config('services.midtrans.is_production'),
                     ]);
 
                     $params = [
@@ -449,11 +455,11 @@ class AdminController extends Controller
                         'custom_expiry' => [
                             'expiry_duration' => 15,
                             'unit' => 'minute',
-                        ]
+                        ],
                     ];
-                    
+
                     $response = \Midtrans\CoreApi::charge($params);
-                    
+
                     // Ambil URL QR Code
                     if (isset($response->actions)) {
                         foreach ($response->actions as $action) {
@@ -464,11 +470,12 @@ class AdminController extends Controller
                         }
                     }
                 } catch (\Exception $e) {
-                    \Log::error('Midtrans Error: ' . $e->getMessage());
+                    \Log::error('Midtrans Error: '.$e->getMessage());
+
                     // Jika gagal generate QR, kembalikan error
                     return response()->json([
-                        'success' => false, 
-                        'message' => 'Gagal memproses QRIS: ' . $e->getMessage()
+                        'success' => false,
+                        'message' => 'Gagal memproses QRIS: '.$e->getMessage(),
                     ], 500);
                 }
             } else {
@@ -479,7 +486,7 @@ class AdminController extends Controller
                         $changeAmount = $amountPaid - $totalAmount;
                         $paidAt = now();
                     }
-                } else if ($request->payment_method === 'cash') {
+                } elseif ($request->payment_method === 'cash') {
                     // Jika metode pembayaran tunai dan amount_paid tidak dispesifikasikan,
                     // asumsikan pembayaran pas atau akan dihitung nanti
                     $paymentStatus = 'paid';
@@ -502,7 +509,7 @@ class AdminController extends Controller
                 'payment_method' => $request->payment_method,
                 'amount_paid' => $amountPaid,
                 'change_amount' => $changeAmount,
-                'paid_at' => $paidAt
+                'paid_at' => $paidAt,
             ]);
 
             // Buat item pesanan
@@ -514,7 +521,7 @@ class AdminController extends Controller
                     'menu_id' => $item['menu_id'],
                     'quantity' => $item['quantity'],
                     'price' => $menu->price,
-                    'special_instructions' => $item['notes'] ?? null
+                    'special_instructions' => $item['notes'] ?? null,
                 ]);
 
                 // Update stok menu
@@ -528,47 +535,48 @@ class AdminController extends Controller
                 'order_id' => $order->id,
                 'total_amount' => $totalAmount,
                 'qris_url' => $qrisUrl,
-                'payment_method' => $request->payment_method
+                'payment_method' => $request->payment_method,
             ]);
-            
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal: ' . implode(', ', $e->validator->errors()->all())
+                'message' => 'Validasi gagal: '.implode(', ', $e->validator->errors()->all()),
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('POS Order Error: ' . $e->getMessage(), [
+            \Log::error('POS Order Error: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
+                'request' => $request->all(),
             ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     // ========== QR CODE MANAGEMENT ==========
-    
+
     // Menampilkan halaman QR Code Generator
     public function qrCodeManager()
     {
         return view('admin.qr-codes');
     }
-    
+
     // Generate QR Code untuk meja
     public function generateTableQR($tableNumber)
     {
-        $url = url('/menu?table=' . $tableNumber);
-        
+        $url = url('/menu?table='.$tableNumber);
+
         return view('admin.qr-code-view', [
             'tableNumber' => $tableNumber,
-            'url' => $url
+            'url' => $url,
         ]);
     }
-    
+
     // ========== CUSTOMER MANAGEMENT ==========
-    
+
     // Menampilkan daftar pelanggan
     public function customers()
     {
@@ -576,56 +584,56 @@ class AdminController extends Controller
             ->withCount('orders')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-            
+
         return view('admin.customers', compact('customers'));
     }
-    
+
     // Detail pelanggan
     public function customerDetail($id)
     {
         $customer = User::where('role', 'customer')
-            ->with(['orders' => function($query) {
+            ->with(['orders' => function ($query) {
                 $query->orderBy('created_at', 'desc')->limit(10);
             }])
             ->withCount('orders')
             ->findOrFail($id);
-            
+
         return view('admin.customer-detail', compact('customer'));
     }
-    
+
     // Toggle status aktif/nonaktif pelanggan
     public function toggleCustomerStatus($id)
     {
         $customer = User::where('role', 'customer')->findOrFail($id);
-        
+
         // Toggle is_active (jika ada field ini)
         // Atau bisa gunakan soft delete
         $customer->update([
-            'is_active' => !($customer->is_active ?? true)
+            'is_active' => ! ($customer->is_active ?? true),
         ]);
-        
+
         $status = $customer->is_active ? 'diaktifkan' : 'dinonaktifkan';
-        
+
         return redirect()->back()->with('success', "Pelanggan berhasil {$status}");
     }
-    
+
     // Hapus pelanggan
     public function deleteCustomer($id)
     {
         $customer = User::where('role', 'customer')->findOrFail($id);
-        
+
         // Nullify orders - convert to guest orders (preserve order history)
         if ($customer->orders()->count() > 0) {
             $customer->orders()->update(['user_id' => null]);
-            \Log::info("Customer deleted with orders converted to guest", [
+            \Log::info('Customer deleted with orders converted to guest', [
                 'customer_id' => $id,
                 'customer_name' => $customer->name,
-                'orders_count' => $customer->orders()->count()
+                'orders_count' => $customer->orders()->count(),
             ]);
         }
-        
+
         $customer->delete();
-        
+
         return redirect()->route('admin.customers')->with('success', 'Pelanggan berhasil dihapus. Riwayat pesanan disimpan sebagai pesanan guest.');
     }
 
@@ -633,12 +641,12 @@ class AdminController extends Controller
     public function checkStatus($id)
     {
         $order = Order::findOrFail($id);
-        
+
         return response()->json([
             'status' => $order->payment_status,
             'order_number' => $order->order_number,
             'total_amount' => $order->total_amount,
-            'amount_paid' => $order->amount_paid
+            'amount_paid' => $order->amount_paid,
         ]);
     }
 
@@ -646,15 +654,15 @@ class AdminController extends Controller
     public function simulatePay($id)
     {
         $order = Order::findOrFail($id);
-        
+
         // Update status jadi paid
         $order->update([
             'payment_status' => 'paid',
             'amount_paid' => $order->total_amount,
             'change_amount' => 0,
-            'paid_at' => now()
+            'paid_at' => now(),
         ]);
-        
+
         return response()->json(['success' => true]);
     }
 }

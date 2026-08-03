@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class UserSeeder extends Seeder
 {
@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'admin',
             'phone' => '081234567890',
-            'address' => 'Jl. Admin No. 1'
+            'address' => 'Jl. Admin No. 1',
         ]);
 
         // Create Kitchen User
@@ -30,7 +30,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'kitchen',
             'phone' => '081234567891',
-            'address' => 'Jl. Kitchen No. 2'
+            'address' => 'Jl. Kitchen No. 2',
         ]);
 
         // Create Customer User
@@ -40,7 +40,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'customer',
             'phone' => '081234567892',
-            'address' => 'Jl. Customer No. 3'
+            'address' => 'Jl. Customer No. 3',
         ]);
 
         // Create Cashier User

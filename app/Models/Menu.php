@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Menu extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'name',
         'description',
@@ -16,20 +16,20 @@ class Menu extends Model
         'image',
         'is_available',
         'stock',
-        'category_id'
+        'category_id',
     ];
 
     protected $casts = [
         'stock' => 'integer',
         'is_available' => 'boolean',
     ];
-    
+
     // Relasi ke kategori
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
-    
+
     // Relasi ke order items
     public function orderItems()
     {

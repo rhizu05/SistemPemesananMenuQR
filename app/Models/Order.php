@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'order_number',
         'user_id',
@@ -32,32 +32,32 @@ class Order extends Model
         'discount_amount',
         'subtotal',
     ];
-    
+
     protected $casts = [
         'completed_at' => 'datetime',
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
     ];
-    
+
     // Relasi ke user
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-    
+
     // Relasi ke voucher
     public function voucher()
     {
         return $this->belongsTo(Voucher::class);
     }
-    
+
     // Relasi ke order items
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
-    
+
     // Relasi ke menus melalui order items
     public function menus()
     {

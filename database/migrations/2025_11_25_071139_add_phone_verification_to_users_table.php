@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             // Ubah email menjadi nullable karena sekarang tidak wajib
             $table->string('email')->nullable()->change();
-            
+
             // Tambah kolom untuk verifikasi phone
             $table->string('phone_verified_at')->nullable()->after('phone');
             $table->string('otp_code')->nullable()->after('phone_verified_at');

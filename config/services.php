@@ -49,5 +49,4 @@ return [
         'url' => env('FONNTE_URL', 'https://api.fonnte.com/send'),
     ],
 
-
 ];

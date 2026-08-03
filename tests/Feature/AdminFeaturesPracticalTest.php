@@ -1,16 +1,15 @@
 <?php
 
-use App\Models\User;
-use App\Models\Menu;
 use App\Models\Category;
+use App\Models\Menu;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
 describe('Admin Features - Practical', function () {
-    
+
     beforeEach(function () {
         $this->admin = User::factory()->create([
             'name' => 'Admin AKPL',
@@ -24,9 +23,9 @@ describe('Admin Features - Practical', function () {
     // Test: Admin can view menu list
     test('admin can view menu list', function () {
         Menu::factory()->count(5)->create();
-        
+
         $response = $this->get('/admin/menu');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('admin.menu');
     });
@@ -34,9 +33,9 @@ describe('Admin Features - Practical', function () {
     // Test: Admin can create menu
     test('admin can create menu item', function () {
         Storage::fake('public');
-        
+
         $category = Category::factory()->create();
-        
+
         $response = $this->post('/admin/menu', [
             'name' => 'Test Menu',
             'category_id' => $category->id,
@@ -56,9 +55,9 @@ describe('Admin Features - Practical', function () {
     // Test: Admin can view categories
     test('admin can view category list', function () {
         Category::factory()->count(3)->create();
-        
+
         $response = $this->get('/admin/categories');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('admin.categories');
     });
@@ -80,7 +79,7 @@ describe('Admin Features - Practical', function () {
     // Test: Admin can access dashboard
     test('admin can access dashboard', function () {
         $response = $this->get('/admin/dashboard');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('admin.dashboard');
     });
@@ -88,7 +87,7 @@ describe('Admin Features - Practical', function () {
     // Test: Admin can update menu
     test('admin can update menu item', function () {
         $menu = Menu::factory()->create(['name' => 'Old Name']);
-        
+
         $response = $this->put("/admin/menu/{$menu->id}", [
             'name' => 'Updated Name',
             'category_id' => $menu->category_id,
@@ -108,9 +107,9 @@ describe('Admin Features - Practical', function () {
     // Test: Admin can delete menu
     test('admin can delete menu item', function () {
         $menu = Menu::factory()->create();
-        
+
         $response = $this->delete("/admin/menu/{$menu->id}");
-        
+
         $response->assertRedirect();
         $this->assertDatabaseMissing('menus', ['id' => $menu->id]);
     });
@@ -119,9 +118,9 @@ describe('Admin Features - Practical', function () {
     test('non-admin cannot access admin menu', function () {
         $cashier = User::factory()->create(['role' => 'cashier']);
         $this->actingAs($cashier);
-        
+
         $response = $this->get('/admin/menu');
-        
+
         $response->assertStatus(403);
     });
 });

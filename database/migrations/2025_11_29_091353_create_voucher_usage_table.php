@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
             $table->decimal('discount_amount', 10, 2)->comment('Jumlah diskon yang didapat');
             $table->timestamp('used_at')->useCurrent();
-            
+
             // Index
             $table->index('voucher_id');
             $table->index('user_id');

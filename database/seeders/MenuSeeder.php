@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Menu;
 use App\Models\Category;
+use App\Models\Menu;
+use Illuminate\Database\Seeder;
 
 class MenuSeeder extends Seeder
 {
@@ -226,7 +226,7 @@ class MenuSeeder extends Seeder
                 'stock' => 20,
                 'is_available' => true,
             ],
-             [
+            [
                 'category_name' => 'Dessert',
                 'name' => 'Choco Lava Cake',
                 'description' => 'Kue coklat hangat dengan isian coklat lumer di dalamnya.',
@@ -264,19 +264,19 @@ class MenuSeeder extends Seeder
 
         foreach ($menus as $menuData) {
             $category = Category::where('name', $menuData['category_name'])->first();
-            
+
             if ($category) {
                 Menu::firstOrCreate(
                     [
                         'name' => $menuData['name'],
-                        'category_id' => $category->id
+                        'category_id' => $category->id,
                     ],
                     [
                         'description' => $menuData['description'],
                         'price' => $menuData['price'],
                         'stock' => $menuData['stock'],
                         'is_available' => $menuData['is_available'],
-                        'image' => null
+                        'image' => null,
                     ]
                 );
             }
