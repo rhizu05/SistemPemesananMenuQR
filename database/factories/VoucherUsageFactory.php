@@ -9,7 +9,7 @@ use App\Models\VoucherUsage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\VoucherUsage>
+ * @extends Factory<VoucherUsage>
  */
 class VoucherUsageFactory extends Factory
 {

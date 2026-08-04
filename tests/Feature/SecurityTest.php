@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\VerifyCsrfToken;
+use App\Models\Category;
 use App\Models\Menu;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,9 +65,9 @@ describe('Security Testing', function () {
     test('user input in forms is sanitized', function () {
         $this->actingAs($this->admin);
 
-        $category = \App\Models\Category::factory()->create();
+        $category = Category::factory()->create();
 
-        $response = $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+        $response = $this->withoutMiddleware(VerifyCsrfToken::class)
             ->post('/admin/menu', [
                 'name' => '<img src=x onerror=alert(1)>',
                 'description' => '<script>alert("XSS")</script>',

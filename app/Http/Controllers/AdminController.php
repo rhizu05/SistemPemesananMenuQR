@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderStatusUpdated;
 use App\Models\Category;
 use App\Models\Menu;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Midtrans\Config;
+use Midtrans\CoreApi;
 
 class AdminController extends Controller
 {
@@ -259,7 +264,7 @@ class AdminController extends Controller
         $order->update(['status' => $request->status]);
 
         // Broadcast event untuk real-time update
-        \App\Events\OrderStatusUpdated::dispatch($order);
+        OrderStatusUpdated::dispatch($order);
 
         return redirect()->back()->with('success', 'Status pesanan berhasil diperbarui.');
     }
@@ -377,10 +382,10 @@ class AdminController extends Controller
     // Konfigurasi Midtrans
     private function configureMidtrans()
     {
-        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
-        \Midtrans\Config::$isProduction = config('services.midtrans.is_production');
-        \Midtrans\Config::$isSanitized = config('services.midtrans.is_sanitized');
-        \Midtrans\Config::$is3ds = config('services.midtrans.is_3ds');
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = config('services.midtrans.is_production');
+        Config::$isSanitized = config('services.midtrans.is_sanitized');
+        Config::$is3ds = config('services.midtrans.is_3ds');
     }
 
     // Membuat pesanan dari POS
@@ -458,7 +463,7 @@ class AdminController extends Controller
                         ],
                     ];
 
-                    $response = \Midtrans\CoreApi::charge($params);
+                    $response = CoreApi::charge($params);
 
                     // Ambil URL QR Code
                     if (isset($response->actions)) {
@@ -516,7 +521,7 @@ class AdminController extends Controller
             foreach ($request->items as $item) {
                 $menu = Menu::findOrFail($item['menu_id']);
 
-                \App\Models\OrderItem::create([
+                OrderItem::create([
                     'order_id' => $order->id,
                     'menu_id' => $item['menu_id'],
                     'quantity' => $item['quantity'],
@@ -538,7 +543,7 @@ class AdminController extends Controller
                 'payment_method' => $request->payment_method,
             ]);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal: '.implode(', ', $e->validator->errors()->all()),

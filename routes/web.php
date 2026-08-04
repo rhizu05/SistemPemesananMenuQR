@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PaymentCallbackController;
 
 // ==================== AUTHENTICATION ROUTES ====================
 
@@ -25,4 +26,4 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 require_once __DIR__.'/admin.php';
 
 // Midtrans Webhook
-Route::post('/midtrans/callback', [\App\Http\Controllers\PaymentCallbackController::class, 'handle'])->name('midtrans.callback');
+Route::post('/midtrans/callback', [PaymentCallbackController::class, 'handle'])->name('midtrans.callback');

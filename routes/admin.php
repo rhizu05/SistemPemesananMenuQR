@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CashierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\QRController;
@@ -65,22 +66,22 @@ Route::prefix('admin')->middleware(['auth', 'role:admin', 'prevent_kitchen'])->g
 
 // Routes untuk Cashier (Cashier only - Admin has their own dashboard)
 Route::prefix('cashier')->middleware(['auth', 'role:cashier', 'prevent_kitchen'])->group(function () {
-    Route::get('/', [App\Http\Controllers\CashierController::class, 'dashboard'])->name('cashier.dashboard');
-    Route::get('/dashboard', [App\Http\Controllers\CashierController::class, 'dashboard']);
+    Route::get('/', [CashierController::class, 'dashboard'])->name('cashier.dashboard');
+    Route::get('/dashboard', [CashierController::class, 'dashboard']);
 
     // Orders
-    Route::get('/orders', [App\Http\Controllers\CashierController::class, 'orders'])->name('cashier.orders');
+    Route::get('/orders', [CashierController::class, 'orders'])->name('cashier.orders');
 
     // Payments
-    Route::get('/payments', [App\Http\Controllers\CashierController::class, 'pendingPayments'])->name('cashier.payments');
-    Route::post('/payments/{id}/verify', [App\Http\Controllers\CashierController::class, 'verifyPayment'])->name('cashier.payments.verify');
+    Route::get('/payments', [CashierController::class, 'pendingPayments'])->name('cashier.payments');
+    Route::post('/payments/{id}/verify', [CashierController::class, 'verifyPayment'])->name('cashier.payments.verify');
 
     // POS (reuse admin POS controller logic but cashier view)
     Route::get('/pos', [AdminController::class, 'showPOS'])->name('cashier.pos');
     Route::post('/pos/order', [AdminController::class, 'createPOSOrder'])->name('cashier.pos.create-order');
     Route::get('/order/{id}/status', [AdminController::class, 'checkStatus'])->name('cashier.order.status');
     Route::get('/order/{id}/receipt', [AdminController::class, 'printReceipt'])->name('cashier.order.receipt');
-    Route::get('/pending-count', [App\Http\Controllers\CashierController::class, 'getPendingCount'])->name('cashier.pending-count');
+    Route::get('/pending-count', [CashierController::class, 'getPendingCount'])->name('cashier.pending-count');
 });
 
 // Routes untuk Kitchen

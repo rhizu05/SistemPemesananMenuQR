@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\VoucherUsageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class VoucherUsage extends Model
 {
-    /** @use HasFactory<\Database\Factories\VoucherUsageFactory> */
+    /** @use HasFactory<VoucherUsageFactory> */
     use HasFactory;
 
     protected $table = 'voucher_usage';

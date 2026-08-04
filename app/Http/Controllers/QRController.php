@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderStatusUpdated;
 use App\Models\Category;
 use App\Models\Menu;
 use App\Models\Order;
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class QRController extends Controller
 {
@@ -31,7 +34,7 @@ class QRController extends Controller
         ]);
 
         // Buat nomor pesanan unik
-        $orderNumber = 'ORD-'.date('Ymd').'-'.strtoupper(\Illuminate\Support\Str::random(6));
+        $orderNumber = 'ORD-'.date('Ymd').'-'.strtoupper(Str::random(6));
 
         // Hitung total jumlah
         $totalAmount = 0;
@@ -58,7 +61,7 @@ class QRController extends Controller
         foreach ($request->items as $item) {
             $menu = Menu::findOrFail($item['menu_id']);
 
-            \App\Models\OrderItem::create([
+            OrderItem::create([
                 'order_id' => $order->id,
                 'menu_id' => $item['menu_id'],
                 'quantity' => $item['quantity'],
@@ -71,7 +74,7 @@ class QRController extends Controller
         }
 
         // Broadcast event untuk real-time update
-        \App\Events\OrderStatusUpdated::dispatch($order);
+        OrderStatusUpdated::dispatch($order);
 
         // Redirect ke halaman status pesanan
         return redirect()->route('customer.order.status', ['orderNumber' => $orderNumber])

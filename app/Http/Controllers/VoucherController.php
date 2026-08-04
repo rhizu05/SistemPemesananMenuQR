@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Voucher;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class VoucherController extends Controller
 {
@@ -55,7 +56,7 @@ class VoucherController extends Controller
             \Log::info('Voucher Created Successfully', ['voucher_id' => $voucher->id]);
 
             return redirect()->route('admin.vouchers.index')->with('success', 'Voucher berhasil ditambahkan!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             \Log::error('Voucher Store Validation Error', [
                 'errors' => $e->errors(),
                 'request_data' => $request->all(),
@@ -117,7 +118,7 @@ class VoucherController extends Controller
             \Log::info('Voucher Updated Successfully', ['voucher_id' => $voucher->id]);
 
             return redirect()->route('admin.vouchers.index')->with('success', 'Voucher berhasil diupdate!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             \Log::error('Voucher Update Validation Error', [
                 'id' => $id,
                 'errors' => $e->errors(),

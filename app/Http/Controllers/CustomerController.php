@@ -6,8 +6,12 @@ use App\Models\Category;
 use App\Models\Menu;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Midtrans\Config;
+use Midtrans\CoreApi;
 
 class CustomerController extends Controller
 {
@@ -154,7 +158,7 @@ class CustomerController extends Controller
         $appliedVoucher = session('applied_voucher');
         if ($appliedVoucher) {
             // Re-validate voucher min transaction
-            $voucher = \App\Models\Voucher::find($appliedVoucher['id']);
+            $voucher = Voucher::find($appliedVoucher['id']);
             if ($voucher && $cartSubtotal >= $voucher->min_transaction) {
                 $discount = $voucher->calculateDiscount($cartSubtotal);
                 // Update session discount
@@ -250,7 +254,7 @@ class CustomerController extends Controller
             }
 
             $code = strtoupper($request->get('apply_voucher'));
-            $voucher = \App\Models\Voucher::where('code', $code)
+            $voucher = Voucher::where('code', $code)
                 ->active()
                 ->valid()
                 ->available()
@@ -346,7 +350,7 @@ class CustomerController extends Controller
 
         $appliedVoucher = session('applied_voucher');
         if ($appliedVoucher) {
-            $voucher = \App\Models\Voucher::find($appliedVoucher['id']);
+            $voucher = Voucher::find($appliedVoucher['id']);
 
             if ($voucher && $voucher->isValid() && $voucher->isAvailable()) {
                 $userId = auth()->id();
@@ -400,7 +404,7 @@ class CustomerController extends Controller
                     ],
                 ];
 
-                $response = \Midtrans\CoreApi::charge($params);
+                $response = CoreApi::charge($params);
 
                 // Ambil URL QR Code
                 if (isset($response->actions)) {
@@ -484,7 +488,7 @@ class CustomerController extends Controller
 
         // Record Voucher Usage
         if ($voucher) {
-            \App\Models\VoucherUsage::create([
+            VoucherUsage::create([
                 'voucher_id' => $voucher->id,
                 'user_id' => auth()->id(),
                 'order_id' => $order->id,
@@ -630,9 +634,9 @@ class CustomerController extends Controller
 
     private function configureMidtrans()
     {
-        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
-        \Midtrans\Config::$isProduction = config('services.midtrans.is_production');
-        \Midtrans\Config::$isSanitized = config('services.midtrans.is_sanitized');
-        \Midtrans\Config::$is3ds = config('services.midtrans.is_3ds');
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = config('services.midtrans.is_production');
+        Config::$isSanitized = config('services.midtrans.is_sanitized');
+        Config::$is3ds = config('services.midtrans.is_3ds');
     }
 }

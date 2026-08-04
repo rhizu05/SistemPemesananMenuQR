@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,7 +22,7 @@ class RouteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Register the role middleware
-        $this->app['router']->aliasMiddleware('role', \App\Http\Middleware\RoleMiddleware::class);
+        $this->app['router']->aliasMiddleware('role', RoleMiddleware::class);
 
         $this->mapRoutes();
     }

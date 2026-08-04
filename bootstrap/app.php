@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\PreventKitchenAccess;
+use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,9 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: explode(',', env('TRUSTED_PROXIES', '*')));
 
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
-            'prevent_kitchen' => \App\Http\Middleware\PreventKitchenAccess::class,
-            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'role' => RoleMiddleware::class,
+            'prevent_kitchen' => PreventKitchenAccess::class,
+            'guest' => RedirectIfAuthenticated::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
