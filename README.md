@@ -3,12 +3,10 @@
 Sistem Pemesanan Menu Restoran Berbasis **QR Code** untuk restoran **Dapoer Katendjo**. Pelanggan memindai QR di meja, memesan langsung dari smartphone, membayar secara digital, dan pesanan masuk otomatis ke dashboard dapur secara real-time.
 
 ![Laravel](https://img.shields.io/badge/Laravel-12-red?logo=laravel&logoColor=white)
-![PHP](https://img.shields.io/badge/PHP-8.2+-blueviolet?logo=php)
+![PHP](https://img.shields.io/badge/PHP-8.3+-blueviolet?logo=php)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple?logo=bootstrap)
-![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)
-![Tests](https://img.shields.io/badge/tests-102%20passed-brightgreen)
-
-> Ganti `YOUR_USERNAME/YOUR_REPO` pada badge CI dengan username & nama repositori GitHub kamu setelah di-push.
+![CI](https://github.com/rhizu05/SistemPemesananMenuQR/actions/workflows/ci.yml/badge.svg)
+![Tests](https://img.shields.io/badge/tests-107%20passed-brightgreen)
 
 ---
 
@@ -17,7 +15,7 @@ Sistem Pemesanan Menu Restoran Berbasis **QR Code** untuk restoran **Dapoer Kate
 - **Pemesanan via QR** - Scan QR per meja → lihat menu digital → pesan → bayar
 - **Multi-Role Dashboard** - Admin, Kasir, Dapur, dan Pelanggan
 - **Pembayaran Digital** - Integrasi Midtrans Snap (QRIS, GoPay, OVO, DANA, ShopeePay, Transfer Bank, Kartu)
-- **Real-time Order Tracking** - Status pesanan live dari dapur ke pelanggan (Pusher/Broadcast)
+- **Lacak Status Pesanan** - Pantau status pesanan dari dapur hingga siap diantar
 - **Login OTP WhatsApp** - Autentikasi pelanggan via nomor WhatsApp + OTP (Fonnte API)
 - **Manajemen Menu & Kategori** - CRUD lengkap dengan gambar, harga, dan stok
 - **Sistem Voucher** - Kode promo diskon persentase/nominal dengan kuota & minimum belanja
@@ -66,12 +64,6 @@ Login: Admin/Kasir/Dapur memakai **email + password**, Pelanggan memakai **nomor
 |-----------------|
 | <img src="docs/screenshots/kitchen/01-kitchen-dashboard.png" alt="Dashboard Dapur" width="340"> |
 
-## Demo Live
-
-> **Belum tersedia.** Isi link di bawah setelah deploy (panduan: [`docs/6_DEPLOYMENT_RENDER.md`](./docs/6_DEPLOYMENT_RENDER.md)).
-
-🔗 [https://your-app.onrender.com](https://your-app.onrender.com)
-
 ## Teknologi
 
 | Komponen | Teknologi |
@@ -82,7 +74,7 @@ Login: Admin/Kasir/Dapur memakai **email + password**, Pelanggan memakai **nomor
 | Payment | Midtrans Snap API |
 | OTP/WhatsApp | Fonnte API |
 | QR Code | SimpleSoftwareIO/simple-qrcode |
-| Realtime | Pusher + Laravel Echo |
+| Broadcast Event | Laravel Echo + Pusher (dependencies) |
 | Build Tool | Vite |
 
 ## Struktur Proyek

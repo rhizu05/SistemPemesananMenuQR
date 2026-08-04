@@ -13,7 +13,7 @@
 | **Pemesanan via QR** | Pelanggan scan QR di meja → melihat menu → pesan → bayar |
 | **Multi-Role** | Admin, Kasir, Dapur, dan Pelanggan dengan dashboard masing-masing |
 | **Pembayaran Digital** | Integrasi Midtrans (GoPay, OVO, DANA, QRIS, Transfer Bank, Kartu Kredit) |
-| **Real-time Order Tracking** | Status pesanan live dari dapur ke pelanggan |
+| **Lacak Status Pesanan** | Pantau status pesanan dari dapur hingga siap diantar |
 | **Manajemen Menu & Kategori** | CRUD lengkap untuk menu dan kategori makanan/minuman |
 | **Sistem Voucher/Diskon** | Pembuatan dan manajemen voucher promo |
 | **QR Code Generator** | Generate QR code untuk setiap meja secara otomatis |
@@ -25,7 +25,7 @@
 
 | Komponen | Teknologi |
 |----------|-----------|
-| **Backend Framework** | Laravel 12 (PHP 8.2+) |
+| **Backend Framework** | Laravel 12 (PHP 8.3+) |
 | **Frontend** | Blade Template Engine + Bootstrap 5.3 |
 | **JavaScript** | Vanilla JavaScript (ES6+) |
 | **Database** | SQLite (Development) / MySQL / PostgreSQL (Production) |

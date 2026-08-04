@@ -200,7 +200,7 @@ Sistem terintegrasi dengan **Midtrans Snap** untuk pembayaran digital:
 
 ### Backend
 - **Framework**: Laravel 12
-- **Bahasa**: PHP 8.2+
+- **Bahasa**: PHP 8.3+
 - **Database**: SQLite (dev) / MySQL / PostgreSQL (prod)
 - **API Pattern**: RESTful API
 
